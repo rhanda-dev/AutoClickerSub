@@ -3,7 +3,6 @@ using OpenCvSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -12,12 +11,17 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 
+/// <summary>
+/// auto click matched image.
+/// </summary>
 public class AutoClickerCLI
 {
+	/// <summary>
+	/// template image
+	/// </summary>
 	public class TemplateFile
 	{
 		public string FileName { set; get; }
@@ -41,6 +45,10 @@ public class AutoClickerCLI
 			set { Count = int.Parse(value); }
 		}
 	}
+
+	/// <summary>
+	/// target application windowinfo
+	/// </summary>
 	public class WindowInfo
 	{
 		[XmlIgnore]
@@ -61,7 +69,6 @@ public class AutoClickerCLI
 			FullPathName = "";
 			Rect = new RECT();
 		}
-
 		public WindowInfo(IntPtr hwnd = default, string className = default, string text = default, string processname = default, string fullpathname = default, RECT rect = default)
 		{
 			this.hWnd = hwnd;
@@ -72,110 +79,102 @@ public class AutoClickerCLI
 			this.Rect = rect;
 		}
 	}
-	public static (bool, OpenCvSharp.Point, OpenCvSharp.Point) CheckImage(OpenCvSharp.Mat targetimage = default, String imagefilename = default, bool usecolor = default, double dX = default, double dY = default, double threshold = 0.8)
+
+	public class args
 	{
-		FileInfo ImageFileInfo = new FileInfo(imagefilename);
+		public IntPtr hWnd { get; set; }
+		public bool isRealSize { get; set; }
+		public bool useHDC { get; set; }
+		public bool useColor { get; set; }
+		public double dX { get; set; }
+		public double dY { get; set; }
+		public double threshold { get; set; }
 
-		TemplateFile templateFile = new TemplateFile
+		public args()
 		{
-			FileName = ImageFileInfo.Name.ToString(),
-			FullName = ImageFileInfo.FullName.ToString()
-		};
-		templateFile.BitmapImage = new BitmapImage();
-		templateFile.BitmapImage.BeginInit();
-		templateFile.BitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-		templateFile.BitmapImage.CreateOptions = BitmapCreateOptions.None;
-		FileStream stream = File.OpenRead(ImageFileInfo.FullName);
-		templateFile.BitmapImage.StreamSource = stream;
-		templateFile.BitmapImage.EndInit();
-		templateFile.BitmapImage.Freeze();
-		stream.Close();
-		templateFile.MatImage = new Mat();
-		templateFile.MatGrayImage = new Mat();
-		templateFile.MatImage = templateFile.BitmapImage.ToMat();
-		Cv2.CvtColor(templateFile.MatImage, templateFile.MatGrayImage, ColorConversionCodes.BGR2GRAY);
-
-		bool ret;
-		bool retcode = false;
-		string MatchedTemplateFileName = "";
-
-		OpenCvSharp.Point tgtPoint = new OpenCvSharp.Point();
-		OpenCvSharp.Point clickPoint = new OpenCvSharp.Point();
-		OpenCvSharp.Mat MatchedTemplate = new OpenCvSharp.Mat();
-		OpenCvSharp.Mat MatTarget = new OpenCvSharp.Mat();
-
-		if (usecolor) targetimage.CopyTo(MatTarget);
-		else Cv2.CvtColor(targetimage, MatTarget, ColorConversionCodes.BGR2GRAY);
-		int number = 0;
-
-		OpenCvSharp.Mat TemplateImage = new Mat();
-
-		if (usecolor)
-		{
-			templateFile.MatImage.CopyTo(TemplateImage);
+			this.hWnd = IntPtr.Zero;
+			this.isRealSize = false;
+			this.useHDC = false;
+			this.useColor = false;
+			this.dX = 0.5;
+			this.dY = 0.5;
+			this.threshold = 0.8;
 		}
-		else
+		public args(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, bool _usecolor = default, double _dX = 1, double _dY = 1, double _threshold = 0.8)
 		{
-			templateFile.MatGrayImage.CopyTo(TemplateImage);
+			this.hWnd = _hWnd;
+			this.isRealSize = _isrealsize;
+			this.useHDC = _usehdc;
+			this.useColor = _usecolor;
+			this.dX = _dX;
+			this.dY = _dY;
+			this.threshold = _threshold;
 		}
-		(ret, tgtPoint) = MatchTemplate(MatTarget, TemplateImage, threshold);
-		if (ret)
-		{
-			retcode = true;
-			TemplateImage.CopyTo(MatchedTemplate);
-			MatchedTemplateFileName = templateFile.FileName.ToString();
-			number = templateFile.Number;
-			string _spX = "000";
-			string _spY = "000";
-			System.Text.RegularExpressions.Regex r = new System.Text.RegularExpressions.Regex(@"[XY]+[-]?\d{3}", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-			System.Text.RegularExpressions.Match m = r.Match(templateFile.FileName.ToString());
-			while (m.Success)
-			{
-				var s = m.Value;
+	}
 
-				switch (s.Substring(0, 1))
-				{
-					case "X":
-						_spX = s.Substring(1, m.Length - 1);
-						break;
+	/// <summary>
+	/// set AutoClickerCLI paramaters
+	/// </summary>
+	/// <param name="_hWnd">target application window handle/</param>
+	/// <param name="_isrealsize">image dont resized. same as _dX,_dY =1.</param>
+	/// <param name="_usehdc">get capture with HDC. default is false;</param>
+	/// <param name="_usecolor">compare with original color. default is false, compare gray mode.</param>
+	/// <param name="_dX">image width resized magnification.</param>
+	/// <param name="_dY">image height resized magnification.</param>
+	/// <param name="_threshold">compare threshold. default is 0.8</param>
+	/// <returns>return args class</returns>
+	public static args SetArgs(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, bool _usecolor = default, double _dX = 0.5, double _dY = 0.5, double _threshold = 0.8)
+	{
+		args args = new args(_hWnd, _isrealsize, _usehdc, _usecolor, _dX, _dY, _threshold);
+		return args;
+	}
 
-					case "Y":
-						_spY = s.Substring(1, m.Length - 1);
-						break;
-				}
-				m = m.NextMatch();
-			}
-			int _pX = int.Parse(_spX);
-			int _pY = int.Parse(_spY);
-			clickPoint.X = (int)((tgtPoint.X + (TemplateImage.Width / 2.0) + _pX) / dX);
-			clickPoint.Y = (int)((tgtPoint.Y + (TemplateImage.Height / 2.0) + _pY) / dY);
-
-		}
+	/// <summary>
+	/// check image in target application window. image set by filename.
+	/// </summary>
+	/// <param name="args"></param>
+	/// <param name="templatefilename"></param>
+	/// <returns></returns>
+	public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args args = default, String templatefilename = default)
+	{
+		if ((args == default) || (templatefilename == default)) return (false, null, null);
+		(OpenCvSharp.Mat captureimage, POINT _) = GetCapture(args);
+		(bool retcode, OpenCvSharp.Point? tgtPoint, OpenCvSharp.Point? clickPoint) = CheckImage(args, captureimage, templatefilename);
 		return (retcode, tgtPoint, clickPoint);
 	}
 
-	public static Mat loadMat(String filename)
+	/// <summary>
+	/// make templatefile from 'filename'
+	/// </summary>
+	/// <param name="filename"></param>
+	/// <returns></returns>
+	private static TemplateFile MakeTemplateFile(string filename = default)
 	{
-		FileInfo ImageFileInfo = new FileInfo(filename);
+		if (filename == default) return null;
 
-		TemplateFile tempf = new TemplateFile
+		FileInfo fileinfo = new FileInfo(filename);
+		TemplateFile templatefile = new TemplateFile
 		{
-			FileName = ImageFileInfo.Name.ToString(),
-			FullName = ImageFileInfo.FullName.ToString()
+			FileName = fileinfo.Name.ToString(),
+			FullName = fileinfo.FullName.ToString()
 		};
-		tempf.BitmapImage = new BitmapImage();
-		tempf.BitmapImage.BeginInit();
-		tempf.BitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-		tempf.BitmapImage.CreateOptions = BitmapCreateOptions.None;
-		FileStream stream = File.OpenRead(ImageFileInfo.FullName);
-		tempf.BitmapImage.StreamSource = stream;
-		tempf.BitmapImage.EndInit();
-		tempf.BitmapImage.Freeze();
+
+		// convert bitmap to OpenCvSharp.Mat. color & gray.
+		templatefile.BitmapImage = new BitmapImage();
+		templatefile.BitmapImage.BeginInit();
+		templatefile.BitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+		templatefile.BitmapImage.CreateOptions = BitmapCreateOptions.None;
+		FileStream stream = File.OpenRead(templatefile.FullName);
+		templatefile.BitmapImage.StreamSource = stream;
+		templatefile.BitmapImage.EndInit();
+		templatefile.BitmapImage.Freeze();
 		stream.Close();
-		tempf.MatImage = new Mat();
-		tempf.MatGrayImage = new Mat();
-		tempf.MatImage = tempf.BitmapImage.ToMat();
-		return tempf.MatImage;
+		templatefile.MatImage = new Mat();
+		templatefile.MatGrayImage = new Mat();
+		templatefile.MatImage = templatefile.BitmapImage.ToMat();
+		Cv2.CvtColor(templatefile.MatImage, templatefile.MatGrayImage, ColorConversionCodes.BGR2GRAY);
+
+		return templatefile;
 	}
 
 	/// <summary>
@@ -190,9 +189,8 @@ public class AutoClickerCLI
 
 		string[] IMAGE_SEARCH_PATTERN_ALL = ImageCodecInfo.GetImageDecoders().Select(ici => ici.FilenameExtension.Split(';')).Aggregate((current, next) => current.Concat(next).ToArray()); // imagefile extention
 		List<string> ImgFileList = new List<string>();
-		Collection<TemplateFile> TemplateFiles = new Collection<TemplateFile>();
-		TemplateFiles.Clear();
-		int i = 0;
+		Collection<TemplateFile> templatefiles = new Collection<TemplateFile>();
+		templatefiles.Clear();
 		try
 		{
 			foreach (string imgext in IMAGE_SEARCH_PATTERN_ALL)
@@ -201,129 +199,170 @@ public class AutoClickerCLI
 			}
 			ImgFileList.Sort();
 
-			foreach (string ImageFileName in ImgFileList) // load templateimage in memory
+			int i = 0;
+			foreach (string templatefilename in ImgFileList) // load templateimage in memory
 			{
-				try
-				{
-					FileInfo ImageFileInfo = new FileInfo(ImageFileName);
-
-					TemplateFile tempf = new TemplateFile
-					{
-						FileName = ImageFileInfo.Name.ToString(),
-						FullName = ImageFileInfo.FullName.ToString()
-					};
-					tempf.BitmapImage = new BitmapImage();
-					tempf.BitmapImage.BeginInit();
-					tempf.BitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-					tempf.BitmapImage.CreateOptions = BitmapCreateOptions.None;
-					//tempf.BitmapImage.UriSource = new Uri(ImageFileInfo.FullName);
-					FileStream stream = File.OpenRead(ImageFileInfo.FullName);
-					tempf.BitmapImage.StreamSource = stream;
-					tempf.BitmapImage.EndInit();
-					tempf.BitmapImage.Freeze();
-					stream.Close();
-					tempf.MatImage = new Mat();
-					tempf.MatGrayImage = new Mat();
-					tempf.MatImage = tempf.BitmapImage.ToMat();
-					Cv2.CvtColor(tempf.MatImage, tempf.MatGrayImage, ColorConversionCodes.BGR2GRAY);
-					tempf.Number = i;
-					i++;
-					TemplateFiles.Add(tempf);
-				}
-				catch (FileNotFoundException _)
-				{
-					//throw;
-				}
+				TemplateFile templateFile = MakeTemplateFile(templatefilename);
+				templateFile.Number = i;
+				templatefiles.Add(templateFile);
+				i++;
 			}
-			return TemplateFiles;
+			return templatefiles;
 		}
 		catch (Exception e)
 		{
 			if ((e is FileNotFoundException) || (e is DirectoryNotFoundException))
 			{
 				//MessageBox.Show(e.Message, "GetTemplateFileList", MessageBoxButton.OK, MessageBoxImage.Warning);
-				TemplateFiles.Clear(); // nothing found
-				return TemplateFiles;
+				templatefiles.Clear(); // nothing found
+				return null;
 			}
 			throw e;
 		}
 	}
 
 	/// <summary>
-	/// Templatematiching with _targetimage and templatefile in templatefiles
-	///
-	/// return bool true=find, Point=find point,point = clickpoint, string=matched templatefilename
+	/// check image in target application window. image set by user.
 	/// </summary>
-	/// <param name="targetimage"></param>
-	/// <param name="templatefiles"></param>
-	/// <param name="usecolor"></param>
-	/// <param name="dX"></param>
-	/// <param name="dY"></param>
+	/// <param name="args"></param>
+	/// <param name="captureimage"></param>
+	/// <param name="templatefilename"></param>
 	/// <returns></returns>
-	public static (bool, OpenCvSharp.Point, OpenCvSharp.Point, OpenCvSharp.Mat, string, int) TemplateMatch(OpenCvSharp.Mat targetimage = default, Collection<TemplateFile> templatefiles = default, bool usecolor = default, double dX = default, double dY = default, double threshold = 0.8)
+	public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args args = default, OpenCvSharp.Mat captureimage = default, String templatefilename = default)
 	{
-		if (targetimage == default || templatefiles == default) return (false, new OpenCvSharp.Point(0, 0), new OpenCvSharp.Point(0, 0), null, null, 0);
+		if ((args == default) || (captureimage == default) || (templatefilename == default)) return (false, null, null);
+
+		TemplateFile templatefile = MakeTemplateFile(templatefilename);
 
 		bool ret;
 		bool retcode = false;
-		string MatchedTemplateFileName = "";
 
-		OpenCvSharp.Point tgtPoint = new OpenCvSharp.Point();
+		OpenCvSharp.Point? tgtPoint = new OpenCvSharp.Point();
 		OpenCvSharp.Point clickPoint = new OpenCvSharp.Point();
-		OpenCvSharp.Mat MatchedTemplate = new OpenCvSharp.Mat();
-		OpenCvSharp.Mat MatTarget = new OpenCvSharp.Mat();
+		Mat matcaptureimage = new Mat();
+		Mat TemplateImage = new Mat();
 
-		if (usecolor) targetimage.CopyTo(MatTarget);
-		else Cv2.CvtColor(targetimage, MatTarget, ColorConversionCodes.BGR2GRAY);
-		int number = 0;
-		foreach (TemplateFile TemplateFile in templatefiles)
+		if (args.useHDC) captureimage.CopyTo(matcaptureimage);
+		else Cv2.CvtColor(captureimage, matcaptureimage, ColorConversionCodes.BGR2GRAY);
+
+
+		if (args.useHDC) templatefile.MatImage.CopyTo(TemplateImage);
+		else templatefile.MatGrayImage.CopyTo(TemplateImage);
+	
+		(ret, tgtPoint) = MatchTemplate(matcaptureimage, TemplateImage, args.threshold);
+		if (ret)
+		{
+			retcode = true;
+			clickPoint = MakeClickPoint(args, templatefile, tgtPoint);
+		}
+		return (retcode, tgtPoint, clickPoint);
+	}
+
+	/// <summary>
+	/// check image in templatefiles.
+	/// </summary>
+	/// <param name="args"></param>
+	/// <param name="templatefiles"></param>
+	/// <returns></returns>
+	public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?, OpenCvSharp.Mat, string, int?) TemplateMatch(args args = default, Collection<TemplateFile> templatefiles = default)
+	{
+		if (args == default || templatefiles == default) return (false, null, null, null, null, null);
+
+		(OpenCvSharp.Mat captureimage, POINT _) = GetCapture(args);
+
+		bool ret;
+		bool retcode = false; ;
+		string MatchedTemplateFileName = null;
+		int? number = null;
+
+		OpenCvSharp.Point? tgtPoint = new OpenCvSharp.Point();
+		OpenCvSharp.Point clickPoint = new OpenCvSharp.Point();
+		OpenCvSharp.Mat matMatchedTemplateImage = new OpenCvSharp.Mat();
+		OpenCvSharp.Mat matCaptureImage = new OpenCvSharp.Mat();
+
+		if (args.useColor) captureimage.CopyTo(matCaptureImage);
+		else Cv2.CvtColor(captureimage, matCaptureImage, ColorConversionCodes.BGR2GRAY);
+
+		foreach (TemplateFile templatefile in templatefiles)
 		{
 			OpenCvSharp.Mat TemplateImage = new Mat();
 
-			if (usecolor)
-			{
-				TemplateFile.MatImage.CopyTo(TemplateImage);
-			}
-			else
-			{
-				TemplateFile.MatGrayImage.CopyTo(TemplateImage);
-			}
-			(ret, tgtPoint) = MatchTemplate(MatTarget, TemplateImage, threshold);
+			if (args.useColor) templatefile.MatImage.CopyTo(TemplateImage);
+			else templatefile.MatGrayImage.CopyTo(TemplateImage);
+
+			(ret, tgtPoint) = MatchTemplate(matCaptureImage, TemplateImage, args.threshold);
 			if (ret)
 			{
 				retcode = true;
-				//maxPoint = tgtPoint;
-				TemplateImage.CopyTo(MatchedTemplate);
-				MatchedTemplateFileName = TemplateFile.FileName.ToString();
-				number = TemplateFile.Number;
-				string _spX = "000";
-				string _spY = "000";
-				System.Text.RegularExpressions.Regex r = new System.Text.RegularExpressions.Regex(@"[XY]+[-]?\d{3}", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-				System.Text.RegularExpressions.Match m = r.Match(TemplateFile.FileName.ToString());
-				while (m.Success)
-				{
-					var s = m.Value;
-					switch (s.Substring(0, 1))
-					{
-						case "X":
-							_spX = s.Substring(1, m.Length - 1);
-							break;
-
-						case "Y":
-							_spY = s.Substring(1, m.Length - 1);
-							break;
-					}
-					m = m.NextMatch();
-				}
-				int _pX = int.Parse(_spX);
-				int _pY = int.Parse(_spY);
-				clickPoint.X = (int)((tgtPoint.X + (TemplateImage.Width / 2.0) + _pX) / dX);
-				clickPoint.Y = (int)((tgtPoint.Y + (TemplateImage.Height / 2.0) + _pY) / dY);
+				TemplateImage.CopyTo(matMatchedTemplateImage);
+				MatchedTemplateFileName = templatefile.FileName.ToString();
+				number = templatefile.Number;
+				clickPoint = MakeClickPoint(args, templatefile, tgtPoint);
 
 				break;
 			}
 		}
-		return (retcode, tgtPoint, clickPoint, MatchedTemplate, MatchedTemplateFileName, number);
+		return (retcode, tgtPoint, clickPoint, matMatchedTemplateImage, MatchedTemplateFileName, number);
+	}
+
+	private static OpenCvSharp.Point MakeClickPoint(args args, TemplateFile templatefile, OpenCvSharp.Point? tgtPoint)
+	{
+		OpenCvSharp.Point clickPoint = new OpenCvSharp.Point(0, 0);
+		string _spX = "000";
+		string _spY = "000";
+		System.Text.RegularExpressions.Regex r = new System.Text.RegularExpressions.Regex(@"[XY]+[-]?\d{3}", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+		System.Text.RegularExpressions.Match m = r.Match(templatefile.FileName.ToString());
+		while (m.Success)
+		{
+			var s = m.Value;
+			switch (s.Substring(0, 1))
+			{
+				case "X":
+					_spX = s.Substring(1, m.Length - 1);
+					break;
+
+				case "Y":
+					_spY = s.Substring(1, m.Length - 1);
+					break;
+			}
+			m = m.NextMatch();
+		}
+		int _pX = int.Parse(_spX);
+		int _pY = int.Parse(_spY);
+		clickPoint.X = (int)((tgtPoint?.X + (templatefile.MatGrayImage.Width / 2.0) + _pX) / args.dX);
+		clickPoint.Y = (int)((tgtPoint?.Y + (templatefile.MatGrayImage.Height / 2.0) + _pY) / args.dY);
+		return clickPoint;
+	}
+	/// <summary>
+	/// check matTemplate in matTarget.
+	/// </summary>
+	/// <param name="matTarget"></param>
+	/// <param name="matTemplate"></param>
+	/// <param name="threshold"></param>
+	/// <returns></returns>
+	public static (bool ret, OpenCvSharp.Point? maxPoint) MatchTemplate(Mat matTarget = default, Mat matTemplate = default, double threshold = 0.8)
+	{
+		if (matTarget == default || matTemplate == default) return (false, null);
+		if (matTarget.Width < matTemplate.Width || matTarget.Height < matTemplate.Height) return (false, null);
+
+		bool ret = false; // set true found
+		OpenCvSharp.Point minPoint = new OpenCvSharp.Point();
+		OpenCvSharp.Point maxPoint = new OpenCvSharp.Point();
+		Mat result;
+
+		using (result = new Mat(matTarget.Height - matTemplate.Height + 1, matTarget.Width - matTemplate.Width + 1, MatType.CV_8UC1))
+		{
+			Cv2.MatchTemplate(matTarget, matTemplate, result, TemplateMatchModes.CCoeffNormed);
+			Cv2.Threshold(result, result, threshold, 1.0, ThresholdTypes.Binary);
+			Cv2.MinMaxLoc(result, out minPoint, out maxPoint);
+			Cv2.MinMaxLoc(result, out double minval, out double maxval, out minPoint, out maxPoint);
+			if (maxval >= threshold)
+			{
+				ret = true;
+			}
+
+		};
+		return (ret, maxPoint);
 	}
 
 	/// <summary>
@@ -333,87 +372,33 @@ public class AutoClickerCLI
 	/// <param name="hWnd"></param>
 	/// <param name="useHdc"></param>
 	/// <returns></returns>
-	public static (OpenCvSharp.Mat, POINT, double, double) GetCapture(IntPtr hWnd, bool useHdc, bool isRealSize)
+	public static (OpenCvSharp.Mat, POINT) GetCapture(args args)
 	{
 		OpenCvSharp.Mat MatCapturedImage = null;
 		Bitmap BitmapCapturedImage = null;
 		Mat MatResizedImage = new Mat();
-		POINT winSize = new POINT(0, 0);
-		double dX = 0;
-		double dY = 0;
+		POINT capturedsize = new POINT(0, 0);
 
-		using (BitmapCapturedImage = useHdc ? GetWindowCaptureHdc(hWnd) : GetWindowCapture(hWnd))
+		using (BitmapCapturedImage = args.useHDC ? GetWindowCaptureHdc(args.hWnd) : GetWindowCapture(args.hWnd))
 		{
 			if (BitmapCapturedImage == null)
 			{
-				return (null, winSize, 0, 0);
+				return (null, capturedsize);
 			}
 			MatCapturedImage = OpenCvSharp.Extensions.BitmapConverter.ToMat(BitmapCapturedImage);
-			if (isRealSize)
-			{
-				MatCapturedImage.CopyTo(MatResizedImage);
-				dX = 1;
-				dY = 1;
-			}
-			else
-			{
-				Cv2.Resize(MatCapturedImage, MatResizedImage, new OpenCvSharp.Size(MatCapturedImage.Width / 2, MatCapturedImage.Height / 2), 0, 0, InterpolationFlags.Lanczos4); // resize to
-				dX = 0.5;
-				dY = 0.5;
-			}
-			winSize.X = MatCapturedImage.Width;
-			winSize.Y = MatCapturedImage.Height;
+			if (args.isRealSize) MatCapturedImage.CopyTo(MatResizedImage);
+			else Cv2.Resize(MatCapturedImage, MatResizedImage, new OpenCvSharp.Size(MatCapturedImage.Width * args.dX, MatCapturedImage.Height * args.dY), 0, 0, InterpolationFlags.Lanczos4); // resize to
+			capturedsize.X = MatCapturedImage.Width;
+			capturedsize.Y = MatCapturedImage.Height;
 			MatCapturedImage.Dispose();
 		}
-		return (MatResizedImage, winSize, dX, dY);
+		return (MatResizedImage, capturedsize);
 	}
 
 	/// <summary>
-	///
+	/// GetPreviousProcess
 	/// </summary>
-	/// <param name="matTarget"></param>
-	/// <param name="matTemplate"></param>
-	/// <param name="threshold"></param>
 	/// <returns></returns>
-	public static (bool ret, OpenCvSharp.Point maxPoint) MatchTemplate(Mat matTarget = default, Mat matTemplate = default, double threshold = 0.8)
-	{
-		if (matTarget == default || matTemplate == default) return (false, new OpenCvSharp.Point(0, 0));
-		if (matTarget.Width < matTemplate.Width || matTarget.Height < matTemplate.Height) return (false, new OpenCvSharp.Point(0, 0));
-
-		bool ret = false; // set true found
-
-		Mat result;
-
-		result = new Mat(matTarget.Height - matTemplate.Height + 1, matTarget.Width - matTemplate.Width + 1, MatType.CV_8UC1); // template match result area
-
-		OpenCvSharp.Point minPoint = new OpenCvSharp.Point();
-		OpenCvSharp.Point maxPoint = new OpenCvSharp.Point();
-
-		try
-		{
-			/*
-			if (!double.TryParse(Properties.Resources._threshold, out double threshold))
-			{
-				throw new FormatException(Properties.Resources.ERR_PARSE);  // break;
-			}
-			*/
-			Cv2.MatchTemplate(matTarget, matTemplate, result, TemplateMatchModes.CCoeffNormed);
-			Cv2.Threshold(result, result, threshold, 1.0, ThresholdTypes.Binary);
-			Cv2.MinMaxLoc(result, out minPoint, out maxPoint);
-			Cv2.MinMaxLoc(result, out double minval, out double maxval, out minPoint, out maxPoint);
-			if (maxval >= threshold)
-			{
-				ret = true;
-			}
-		}
-		catch (OpenCvSharp.OpenCVException)
-		{
-			ret = false;
-		}
-		result.Dispose();
-		return (ret, maxPoint);
-	}
-
 	public static Process GetPreviousProcess()
 	{
 		Process curProcess = Process.GetCurrentProcess();
@@ -434,6 +419,11 @@ public class AutoClickerCLI
 		return null;
 	}
 
+	/// <summary>
+	/// post keycode to _hWnd
+	/// </summary>
+	/// <param name="_hWnd"></param>
+	/// <param name="_vk"></param>
 	public static void KeyboardClickP(IntPtr _hWnd, VirtualKey _vk)
 	{
 		IntPtr lparamKEYDOWN = (IntPtr)((0x00 << 24) | (NativeMethods.MapVirtualKey((uint)_vk, 0) << 16) | 0x01);
@@ -444,6 +434,12 @@ public class AutoClickerCLI
 		NativeMethods.PostMessage(_hWnd, WindowMessage.WM_KEYUP, new IntPtr((int)_vk), lparamKEYUP);
 		System.Threading.Thread.Sleep(20);
 	}
+
+	/// <summary>
+	/// send keycode to _hWnd
+	/// </summary>
+	/// <param name="_hWnd"></param>
+	/// <param name="_vk"></param>
 	public static void KeyboardClickS(IntPtr _hWnd, VirtualKey _vk)
 	{
 		IntPtr lparamKEYDOWN = (IntPtr)((0x00 << 24) | (NativeMethods.MapVirtualKey((uint)_vk, 0) << 16) | 0x01);
@@ -452,6 +448,13 @@ public class AutoClickerCLI
 		NativeMethods.SendMessage(_hWnd, WindowMessage.WM_KEYDOWN, new IntPtr((int)_vk), lparamKEYDOWN);
 		NativeMethods.SendMessage(_hWnd, WindowMessage.WM_KEYUP, new IntPtr((int)_vk), lparamKEYUP);
 	}
+
+	/// <summary>
+	/// click point(_X, _y) in _hWnd
+	/// </summary>
+	/// <param name="_hWnd"></param>
+	/// <param name="_x"></param>
+	/// <param name="_y"></param>
 	public static void MouseLeftClick(IntPtr _hWnd, double _x, double _y)
 	{
 		Task task = Task.Factory.StartNew(() =>
@@ -472,6 +475,10 @@ public class AutoClickerCLI
 		task.Wait();
 	}
 
+	/// <summary>
+	/// ShowWindowAsync
+	/// </summary>
+	/// <param name="_hWnd"></param>
 	public static void ForceActive(IntPtr _hWnd)
 	{
 		if (NativeMethods.IsIconic(_hWnd))
@@ -486,32 +493,61 @@ public class AutoClickerCLI
 		NativeMethods.AttachThreadInput(targetID, foregroundID, false);
 	}
 
+	/// <summary>
+	/// CalculateAbsoluteCoordinateX
+	/// </summary>
+	/// <param name="x"></param>
+	/// <returns></returns>
 	public static int CalculateAbsoluteCoordinateX(int x)
 	{
 		return (x * 65536) / NativeMethods.GetSystemMetrics(SystemMetric.SM_CXSCREEN);
 	}
 
+	/// <summary>
+	/// CalculateAbsoluteCoordinateY
+	/// </summary>
+	/// <param name="y"></param>
+	/// <returns></returns>
 	public static int CalculateAbsoluteCoordinateY(int y)
 	{
 		return (y * 65536) / NativeMethods.GetSystemMetrics(SystemMetric.SM_CYSCREEN);
 	}
 
+	/// <summary>
+	/// Make HighWord
+	/// </summary>
+	/// <param name="_word"></param>
+	/// <returns></returns>
 	public static long HighWord(int _word)
 	{
 		return ((_word & 0xFFFF0000) >> 16);
 	}
 
+	/// <summary>
+	/// Make LowWord
+	/// </summary>
+	/// <param name="_word"></param>
+	/// <returns></returns>
 	public static long LowWord(int _word)
 	{
 		return (_word & 0x0000FFFF);
 	}
 
+	/// <summary>
+	/// Make DWord
+	/// </summary>
+	/// <param name="_low"></param>
+	/// <param name="_high"></param>
+	/// <returns></returns>
 	public static long MakeDWord(long _low, long _high)
 	{
 		return _high << 16 | (_low & 0xffff);
 	}
 
-	// Get window infomation on maouse cursor
+	/// <summary>
+	/// GetWindowInfo over mouse.
+	/// </summary>
+	/// <returns></returns>
 	public static WindowInfo GetWindowInfo()
 	{
 		POINT pt = new POINT();
