@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -135,6 +136,7 @@ public class AutoClickerCLI
 	/// <param name="args"></param>
 	/// <param name="templatefilename"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args args = default, String templatefilename = default)
 	{
 		if ((args == default) || (templatefilename == default)) return (false, null, null);
@@ -148,6 +150,7 @@ public class AutoClickerCLI
 	/// </summary>
 	/// <param name="filename"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static TemplateFile MakeTemplateFile(string filename = default)
 	{
 		if (filename == default) return null;
@@ -305,6 +308,7 @@ public class AutoClickerCLI
 		return (retcode, tgtPoint, clickPoint, matMatchedTemplateImage, MatchedTemplateFileName, number);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static OpenCvSharp.Point MakeClickPoint(args args, TemplateFile templatefile, OpenCvSharp.Point? tgtPoint)
 	{
 		OpenCvSharp.Point clickPoint = new OpenCvSharp.Point(0, 0);
@@ -340,6 +344,7 @@ public class AutoClickerCLI
 	/// <param name="matTemplate"></param>
 	/// <param name="threshold"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static (bool ret, OpenCvSharp.Point? maxPoint) MatchTemplate(Mat matTarget = default, Mat matTemplate = default, double threshold = 0.8)
 	{
 		if (matTarget == default || matTemplate == default) return (false, null);
@@ -476,7 +481,7 @@ public class AutoClickerCLI
 	}
 
 	/// <summary>
-	/// ShowWindowAsync
+	/// 
 	/// </summary>
 	/// <param name="_hWnd"></param>
 	public static void ForceActive(IntPtr _hWnd)
@@ -498,6 +503,7 @@ public class AutoClickerCLI
 	/// </summary>
 	/// <param name="x"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CalculateAbsoluteCoordinateX(int x)
 	{
 		return (x * 65536) / NativeMethods.GetSystemMetrics(SystemMetric.SM_CXSCREEN);
@@ -508,6 +514,7 @@ public class AutoClickerCLI
 	/// </summary>
 	/// <param name="y"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CalculateAbsoluteCoordinateY(int y)
 	{
 		return (y * 65536) / NativeMethods.GetSystemMetrics(SystemMetric.SM_CYSCREEN);
@@ -518,6 +525,7 @@ public class AutoClickerCLI
 	/// </summary>
 	/// <param name="_word"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long HighWord(int _word)
 	{
 		return ((_word & 0xFFFF0000) >> 16);
@@ -528,6 +536,7 @@ public class AutoClickerCLI
 	/// </summary>
 	/// <param name="_word"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long LowWord(int _word)
 	{
 		return (_word & 0x0000FFFF);
@@ -539,6 +548,7 @@ public class AutoClickerCLI
 	/// <param name="_low"></param>
 	/// <param name="_high"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long MakeDWord(long _low, long _high)
 	{
 		return _high << 16 | (_low & 0xffff);
@@ -548,6 +558,7 @@ public class AutoClickerCLI
 	/// GetWindowInfo over mouse.
 	/// </summary>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static WindowInfo GetWindowInfo()
 	{
 		POINT pt = new POINT();
@@ -555,6 +566,7 @@ public class AutoClickerCLI
 		return GetWindowInfo(pt);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static WindowInfo GetWindowInfo(POINT point)
 	{
 		var hWnd = NativeMethods.WindowFromPoint(point);
@@ -567,6 +579,7 @@ public class AutoClickerCLI
 		return new WindowInfo(hWnd, className, text, ps.ProcessName.ToString(), ps.MainModule.FileName, rect);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static string GetWindowText(IntPtr hWnd)
 	{
 		var length = NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
@@ -575,6 +588,7 @@ public class AutoClickerCLI
 		return buffer.ToString();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static RECT GetWindowRectangle(IntPtr hWnd)
 	{
 		RECT rect = new RECT();
@@ -582,6 +596,7 @@ public class AutoClickerCLI
 		return rect;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static string GetWindowClassName(IntPtr hWnd)
 	{
 		StringBuilder buffer = new StringBuilder(128);
