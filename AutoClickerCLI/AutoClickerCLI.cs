@@ -47,40 +47,6 @@ public class AutoClickerCLI
 		}
 	}
 
-	/// <summary>
-	/// target application windowinfo
-	/// </summary>
-	public class WindowInfo
-	{
-		[XmlIgnore]
-		public IntPtr hWnd { get; set; }
-		public string ClassName { get; set; }
-		public string Text { get; set; }
-		[XmlIgnore]
-		public RECT Rect { get; set; }
-		public string ProcessName { get; set; }
-		public string FullPathName { get; set; }
-
-		public WindowInfo()
-		{
-			hWnd = IntPtr.Zero;
-			ClassName = "";
-			Text = "";
-			ProcessName = "";
-			FullPathName = "";
-			Rect = new RECT();
-		}
-		public WindowInfo(IntPtr hwnd = default, string className = default, string text = default, string processname = default, string fullpathname = default, RECT rect = default)
-		{
-			this.hWnd = hwnd;
-			this.ClassName = className;
-			this.Text = text;
-			this.ProcessName = processname;
-			this.FullPathName = fullpathname;
-			this.Rect = rect;
-		}
-	}
-
 	public class args
 	{
 		public IntPtr hWnd { get; set; }
@@ -128,6 +94,28 @@ public class AutoClickerCLI
 	{
 		args args = new args(_hWnd, _isrealsize, _usehdc, _usecolor, _dX, _dY, _threshold);
 		return args;
+	}
+
+	/// <summary>
+	/// get target window handle by title
+	/// </summary>
+	/// <param name="_title"></param>
+	/// <returns></returns>
+	public static IntPtr GetWindowHandle(string _title)
+	{
+		if (string.IsNullOrEmpty(_title)) return IntPtr.Zero;
+		return NativeMethods.FindWindow(null, _title);
+		/*
+		Process[] p = System.Diagnostics.Process.GetProcessesByName(_title);
+		foreach (System.Diagnostics.Process ps in p)
+		{
+			if ((ps.MainWindowHandle != IntPtr.Zero) && (ps.MainWindowHandle != null))
+			{
+				return ps.MainWindowHandle;
+			}
+		}
+		return IntPtr.Zero;
+		*/
 	}
 
 	/// <summary>
@@ -231,7 +219,7 @@ public class AutoClickerCLI
 	/// <param name="captureimage"></param>
 	/// <param name="templatefilename"></param>
 	/// <returns></returns>
-	public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args args = default, OpenCvSharp.Mat captureimage = default, String templatefilename = default)
+	private static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args args = default, OpenCvSharp.Mat captureimage = default, String templatefilename = default)
 	{
 		if ((args == default) || (captureimage == default) || (templatefilename == default)) return (false, null, null);
 
@@ -251,7 +239,7 @@ public class AutoClickerCLI
 
 		if (args.useHDC) templatefile.MatImage.CopyTo(TemplateImage);
 		else templatefile.MatGrayImage.CopyTo(TemplateImage);
-	
+
 		(ret, tgtPoint) = MatchTemplate(matcaptureimage, TemplateImage, args.threshold);
 		if (ret)
 		{
@@ -345,7 +333,7 @@ public class AutoClickerCLI
 	/// <param name="threshold"></param>
 	/// <returns></returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static (bool ret, OpenCvSharp.Point? maxPoint) MatchTemplate(Mat matTarget = default, Mat matTemplate = default, double threshold = 0.8)
+	private static (bool ret, OpenCvSharp.Point? maxPoint) MatchTemplate(Mat matTarget = default, Mat matTemplate = default, double threshold = 0.8)
 	{
 		if (matTarget == default || matTemplate == default) return (false, null);
 		if (matTarget.Width < matTemplate.Width || matTarget.Height < matTemplate.Height) return (false, null);
@@ -481,6 +469,111 @@ public class AutoClickerCLI
 	}
 
 	/// <summary>
+	/// invoke mouse event
+	/// </summary>
+	/// <param name="__hWnd"></param>
+	/// <param name="mouseevent"></param>
+	/// <param name="_x"></param>
+	/// <param name="_y"></param>
+	/// <param name="wheel"></param>
+	/// <param name="fwKeys"></param>
+	public static void MouseEvent(IntPtr? __hWnd, MOUSEEVENT mouseevent = MOUSEEVENT.CLICK, double _x = 0, double _y = 0, int wheel = 0, fwKeys fwKeys = fwKeys.MK_LBUTTON)
+	{
+		IntPtr _hWnd = NativeMethods.GetDesktopWindow();
+		//IntPtr _hWnd = IntPtr.Zero;
+		if (__hWnd != null) _hWnd = (IntPtr)__hWnd;
+		WindowMessage _up = WindowMessage.WM_LBUTTONUP;
+		WindowMessage _down = WindowMessage.WM_LBUTTONDOWN;
+		WindowMessage _dclk = WindowMessage.WM_LBUTTONDBLCLK;
+
+		IntPtr pos = new IntPtr(MakeDWord((ushort)_x, (ushort)_y));
+		IntPtr setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
+		IntPtr setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+
+		switch (fwKeys)
+		{
+			case fwKeys.MK_LBUTTON:
+				_up = WindowMessage.WM_LBUTTONUP;
+				_down = WindowMessage.WM_LBUTTONDOWN;
+				_dclk = WindowMessage.WM_LBUTTONDBLCLK;
+				break;
+			case fwKeys.MK_RBUTTON:
+				_up = WindowMessage.WM_RBUTTONUP;
+				_down = WindowMessage.WM_RBUTTONDOWN;
+				_dclk = WindowMessage.WM_RBUTTONDBLCLK;
+				break;
+			case fwKeys.MK_MBUTTON:
+				_up = WindowMessage.WM_MBUTTONUP;
+				_down = WindowMessage.WM_MBUTTONDOWN;
+				_dclk = WindowMessage.WM_MBUTTONDBLCLK;
+				break;
+			default:
+				break;
+		}
+		switch (mouseevent)
+		{
+			case MOUSEEVENT.CLICK:
+				if (IntPtr.Zero == _hWnd)
+				{
+					NativeMethods.SetCursorPos((int)_x, (int)_y);
+				}
+				else
+				{
+					setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
+					setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+					NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
+					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
+				}
+				NativeMethods.PostMessage(_hWnd, _down, new IntPtr((int)fwKeys), pos);
+				NativeMethods.PostMessage(_hWnd, _up, IntPtr.Zero, pos);
+				NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+				break;
+			case MOUSEEVENT.DOUBLECLICK:
+				if (IntPtr.Zero == _hWnd)
+				{
+					NativeMethods.SetCursorPos((int)_x, (int)_y);
+				}
+				else
+				{
+					setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
+					setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+				}
+				NativeMethods.PostMessage(_hWnd, _dclk, new IntPtr(MakeDWord(0, (int)WindowMessage.WHEEL_DELTA * wheel)), pos);
+				break;
+			case MOUSEEVENT.TRIPLECLICK:
+				break;
+			case MOUSEEVENT.HWEEL:
+				if (IntPtr.Zero == _hWnd)
+				{
+					NativeMethods.SetCursorPos((int)_x, (int)_y);
+				}
+				else
+				{
+					setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
+					setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+				}
+				NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEHWHEEL, new IntPtr(MakeDWord(0, (int)WindowMessage.WHEEL_DELTA * wheel)), pos);
+				break;
+			case MOUSEEVENT.MOVE:
+				if (IntPtr.Zero == _hWnd)
+				{
+					NativeMethods.SetCursorPos((int)_x, (int)_y);
+				}
+				else
+				{
+					setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+					NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
+				}
+				break;
+			default:
+				break;
+		}
+	}
+	/// <summary>
 	/// 
 	/// </summary>
 	/// <param name="_hWnd"></param>
@@ -552,56 +645,6 @@ public class AutoClickerCLI
 	public static long MakeDWord(long _low, long _high)
 	{
 		return _high << 16 | (_low & 0xffff);
-	}
-
-	/// <summary>
-	/// GetWindowInfo over mouse.
-	/// </summary>
-	/// <returns></returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static WindowInfo GetWindowInfo()
-	{
-		POINT pt = new POINT();
-		NativeMethods.GetCursorPos(out pt);
-		return GetWindowInfo(pt);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static WindowInfo GetWindowInfo(POINT point)
-	{
-		var hWnd = NativeMethods.WindowFromPoint(point);
-		var className = GetWindowClassName(hWnd);
-		var text = GetWindowText(hWnd);
-		var rect = GetWindowRectangle(hWnd);
-		uint ProcessID = 0;
-		uint targetThreadId = NativeMethods.GetWindowThreadProcessId(hWnd, out ProcessID);
-		Process ps = Process.GetProcessById((int)ProcessID);
-		return new WindowInfo(hWnd, className, text, ps.ProcessName.ToString(), ps.MainModule.FileName, rect);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static string GetWindowText(IntPtr hWnd)
-	{
-		var length = NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
-		var buffer = new StringBuilder(length);
-		NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXT, new IntPtr(length + 1), buffer);
-		return buffer.ToString();
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static RECT GetWindowRectangle(IntPtr hWnd)
-	{
-		RECT rect = new RECT();
-		NativeMethods.GetWindowRect(hWnd, ref rect);
-		return rect;
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static string GetWindowClassName(IntPtr hWnd)
-	{
-		StringBuilder buffer = new StringBuilder(128);
-		NativeMethods.GetClassName(hWnd, buffer, buffer.Capacity);
-		return buffer.ToString();
 	}
 
 	public static Bitmap GetWindowCaptureHdc(IntPtr hWnd)
@@ -684,7 +727,7 @@ public class AutoClickerCLI
 	}
 }
 
-public class NativeMethods
+internal class NativeMethods
 {
 	[DllImport("user32.dll")]
 	internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
@@ -694,6 +737,9 @@ public class NativeMethods
 
 	[DllImport("user32.dll")]
 	internal static extern bool SetWindowPlacement(IntPtr hWnd, [In] ref WINDOWPLACEMENT lpwndpl);
+
+	[DllImport("user32.dll", SetLastError = false)]
+	internal static extern IntPtr GetDesktopWindow();
 
 	[DllImport("user32.dll")]
 	internal static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
@@ -834,6 +880,9 @@ public class NativeMethods
 
 	[DllImport("user32.dll")]
 	internal static extern IntPtr WindowFromPoint(POINT point);
+
+	[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+	internal static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 }
 
 [Serializable]
@@ -878,6 +927,16 @@ public struct RECT
 		this.right = right;
 		this.bottom = bottom;
 	}
+}
+
+public enum MOUSEEVENT
+{
+	NOTHING = 0x00,
+	CLICK = 0x01,
+	DOUBLECLICK = 0x02,
+	TRIPLECLICK = 0x03,
+	HWEEL = 0x04,
+	MOVE = 0x10
 }
 
 public enum SW
