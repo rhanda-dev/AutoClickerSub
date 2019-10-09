@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 /// <summary>
 /// auto click matched image.
 /// </summary>
-public class AutoClickerCLI
+public class AutoClickerSub
 {
 	/// <summary>
 	/// template image
@@ -80,7 +80,7 @@ public class AutoClickerCLI
 	}
 
 	/// <summary>
-	/// set AutoClickerCLI paramaters
+	/// set AutoClickerSub paramaters
 	/// </summary>
 	/// <param name="_hWnd">target application window handle/</param>
 	/// <param name="_isrealsize">image dont resized. same as _dX,_dY =1.</param>
