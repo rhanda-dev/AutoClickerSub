@@ -80,6 +80,109 @@ public class AutoClickerSub
 	}
 
 	/// <summary>
+	/// store target application window info.
+	/// </summary>
+	public class WindowInfo
+	{
+		public IntPtr hWnd { get; set; }
+		public string ClassName { get; set; }
+		public string Text { get; set; }
+		public string ProcessName { get; set; }
+		public string FullPathName { get; set; }
+		public RECT Rect { get; set; }
+
+		public WindowInfo()
+		{
+			hWnd = IntPtr.Zero;
+			ClassName = "";
+			Text = "";
+			ProcessName = "";
+			FullPathName = "";
+			Rect = new RECT();
+		}
+
+		public WindowInfo(IntPtr hwnd = default, string className = default, string text = default, string processname = default, string fullpathname = default, RECT rect = default)
+		{
+			this.hWnd = hwnd;
+			this.ClassName = className;
+			this.Text = text;
+			this.ProcessName = processname;
+			this.FullPathName = fullpathname;
+			this.Rect = rect;
+		}
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="hWnd"></param>
+	/// <returns></returns>
+	public static WindowInfo GetWindowInfo(IntPtr hWnd)
+	{
+		var className = GetWindowClassName(hWnd);
+		var text = GetWindowText(hWnd);
+		var rect = GetWindowRectangle(hWnd);
+		uint ProcessID = 0;
+		uint targetThreadId = NativeMethods.GetWindowThreadProcessId(hWnd, out ProcessID);
+		Process ps = Process.GetProcessById((int)ProcessID);
+		return new WindowInfo(hWnd, className, text, ps.ProcessName.ToString(), ps.MainModule.FileName, rect);
+	}
+
+	/// <summary>
+	/// move window to rect.
+	/// </summary>
+	/// <param name="_hWnd"></param>
+	/// <param name="rect"></param>
+	public static void SetWindowPos(IntPtr _hWnd, RECT rect)
+	{
+		NativeMethods.ShowWindow(_hWnd, nCmdShow.SW_RESTORE);
+		NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_TOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SetWindowPosFlags.AsynchronousWindowPosition | SetWindowPosFlags.ShowWindow);
+
+		// target app to nottopmost
+		NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_NOTOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SetWindowPosFlags.AsynchronousWindowPosition | SetWindowPosFlags.ShowWindow);
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="hWnd"></param>
+	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static string GetWindowClassName(IntPtr hWnd)
+	{
+		StringBuilder buffer = new StringBuilder(128);
+		NativeMethods.GetClassName(hWnd, buffer, buffer.Capacity);
+		return buffer.ToString();
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="hWnd"></param>
+	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static string GetWindowText(IntPtr hWnd)
+	{
+		var length = NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
+		var buffer = new StringBuilder(length);
+		NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXT, new IntPtr(length + 1), buffer);
+		return buffer.ToString();
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="hWnd"></param>
+	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static RECT GetWindowRectangle(IntPtr hWnd)
+	{
+		RECT rect = new RECT();
+		NativeMethods.GetWindowRect(hWnd, ref rect);
+		return rect;
+	}
+
+	/// <summary>
 	/// set AutoClickerSub paramaters
 	/// </summary>
 	/// <param name="_hWnd">target application window handle/</param>
