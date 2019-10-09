@@ -574,17 +574,16 @@ public class AutoClickerSub
 	/// <summary>
 	/// invoke mouse event
 	/// </summary>
-	/// <param name="__hWnd"></param>
+	/// <param name="_hWnd"></param>
 	/// <param name="mouseevent"></param>
 	/// <param name="_x"></param>
 	/// <param name="_y"></param>
 	/// <param name="wheel"></param>
 	/// <param name="fwKeys"></param>
-	public static void MouseEvent(IntPtr? __hWnd, MOUSEEVENT mouseevent = MOUSEEVENT.CLICK, double _x = 0, double _y = 0, int wheel = 0, fwKeys fwKeys = fwKeys.MK_LBUTTON)
+	public static bool MouseEvent(IntPtr _hWnd, MOUSEEVENT mouseevent = MOUSEEVENT.CLICK, double _x = 0, double _y = 0, int wheel = 0, fwKeys fwKeys = fwKeys.MK_LBUTTON)
 	{
-		IntPtr _hWnd = NativeMethods.GetDesktopWindow();
-		//IntPtr _hWnd = IntPtr.Zero;
-		if (__hWnd != null) _hWnd = (IntPtr)__hWnd;
+		if (_hWnd == IntPtr.Zero) return false;
+
 		WindowMessage _up = WindowMessage.WM_LBUTTONUP;
 		WindowMessage _down = WindowMessage.WM_LBUTTONDOWN;
 		WindowMessage _dclk = WindowMessage.WM_LBUTTONDBLCLK;
@@ -611,54 +610,40 @@ public class AutoClickerSub
 				_dclk = WindowMessage.WM_MBUTTONDBLCLK;
 				break;
 			default:
+				return false;
 				break;
 		}
 		switch (mouseevent)
 		{
 			case MOUSEEVENT.CLICK:
-				if (IntPtr.Zero == _hWnd)
-				{
-					NativeMethods.SetCursorPos((int)_x, (int)_y);
-				}
-				else
-				{
-					setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
-					setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
-					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
-					NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
-					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
-				}
+				setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
+				setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+				//NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+				NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
+				NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
 				NativeMethods.PostMessage(_hWnd, _down, new IntPtr((int)fwKeys), pos);
+				System.Threading.Thread.Sleep(50);
 				NativeMethods.PostMessage(_hWnd, _up, IntPtr.Zero, pos);
 				NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+				NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
 				break;
 			case MOUSEEVENT.DOUBLECLICK:
-				if (IntPtr.Zero == _hWnd)
-				{
-					NativeMethods.SetCursorPos((int)_x, (int)_y);
-				}
-				else
-				{
-					setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
-					setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
-					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
-				}
+				setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
+				setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+				NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
 				NativeMethods.PostMessage(_hWnd, _dclk, new IntPtr(MakeDWord(0, (int)WindowMessage.WHEEL_DELTA * wheel)), pos);
 				break;
 			case MOUSEEVENT.TRIPLECLICK:
 				break;
-			case MOUSEEVENT.HWEEL:
-				if (IntPtr.Zero == _hWnd)
-				{
-					NativeMethods.SetCursorPos((int)_x, (int)_y);
-				}
-				else
-				{
-					setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
-					setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
-					NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
-				}
-				NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEHWHEEL, new IntPtr(MakeDWord(0, (int)WindowMessage.WHEEL_DELTA * wheel)), pos);
+			case MOUSEEVENT.WHEEL:
+				setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
+				setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+				//NativeMethods.SetForegroundWindow(_hWnd);
+				//System.Threading.Thread.Sleep(1000);
+				NativeMethods.SetCursorPos((int)_x, (int)_y);
+				//System.Threading.Thread.Sleep(1000);
+				//NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+				NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEWHEEL, new IntPtr(MakeDWord(0, (int)WindowMessage.WHEEL_DELTA * wheel)), pos);
 				break;
 			case MOUSEEVENT.MOVE:
 				if (IntPtr.Zero == _hWnd)
@@ -673,8 +658,10 @@ public class AutoClickerSub
 				}
 				break;
 			default:
+				return false;
 				break;
 		}
+		return true;
 	}
 	/// <summary>
 	/// 
@@ -1038,7 +1025,7 @@ public enum MOUSEEVENT
 	CLICK = 0x01,
 	DOUBLECLICK = 0x02,
 	TRIPLECLICK = 0x03,
-	HWEEL = 0x04,
+	WHEEL = 0x04,
 	MOVE = 0x10
 }
 
