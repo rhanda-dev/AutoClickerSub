@@ -526,9 +526,9 @@ public class AutoClickerSub
 		IntPtr lparamKEYUP = (IntPtr)((0xC0 << 24) | (NativeMethods.MapVirtualKey((uint)_vk, 0) << 16) | 0x01);
 
 		NativeMethods.PostMessage(_hWnd, WindowMessage.WM_KEYDOWN, new IntPtr((int)_vk), lparamKEYDOWN);
-		System.Threading.Thread.Sleep(20);
+		System.Threading.Thread.Sleep(30);
 		NativeMethods.PostMessage(_hWnd, WindowMessage.WM_KEYUP, new IntPtr((int)_vk), lparamKEYUP);
-		System.Threading.Thread.Sleep(20);
+		System.Threading.Thread.Sleep(30);
 	}
 
 	/// <summary>
