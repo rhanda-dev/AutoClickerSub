@@ -84,7 +84,7 @@ public class AutoClickerSub
     public class EnumWindows
     {
         public List<WindowInfo> windowInfos;
-
+        public bool haveProcessName = false;
         /// <summary>
         /// EnumWindows callback function
         /// </summary>
@@ -103,7 +103,14 @@ public class AutoClickerSub
                     uint ProcessID = 0;
                     uint targetThreadId = NativeMethods.GetWindowThreadProcessId(hWnd, out ProcessID);
                     (string filname, string processname) = NativeMethods.GetProceeAndFileName((int)ProcessID);
-                    windowInfos.Add(new WindowInfo(hWnd, className, text, processname, filname, rect));
+                    if (true == haveProcessName)
+                    {
+                        if (processname.Length > 0) windowInfos.Add(new WindowInfo(hWnd, className, text, processname, filname, rect));
+                    }
+                    else
+                    {
+                        windowInfos.Add(new WindowInfo(hWnd, className, text, processname, filname, rect));
+                    }
                 }
             }
             return true;
@@ -248,10 +255,11 @@ public class AutoClickerSub
     /// make WindowInfo list
     /// </summary>
     /// <returns></returns>
-    public static List<WindowInfo> GetProcessList()
+    public static List<WindowInfo> GetProcessList(bool _haveprocessname = false)
     {
         var obj = new EnumWindows();
         obj.windowInfos = new List<WindowInfo>();
+        obj.haveProcessName = _haveprocessname;
         NativeMethods.EnumWindows(obj.CalbackProc, IntPtr.Zero);
         return obj.windowInfos;
     }
@@ -430,7 +438,8 @@ public class AutoClickerSub
         OpenCvSharp.Mat matMatchedTemplateImage = new OpenCvSharp.Mat();
 
         using (OpenCvSharp.Mat matCaptureImage = new OpenCvSharp.Mat())
-        using (OpenCvSharp.Mat TemplateImage = new Mat()) {
+        using (OpenCvSharp.Mat TemplateImage = new Mat())
+        {
             if (args.useColor) captureimage.CopyTo(matCaptureImage);
             else Cv2.CvtColor(captureimage, matCaptureImage, ColorConversionCodes.BGR2GRAY);
 
@@ -883,15 +892,15 @@ public class AutoClickerSub
 internal class NativeMethods
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static (string,string) GetProceeAndFileName(int pid)
+    public static (string, string) GetProceeAndFileName(int pid)
     {
         var processHandle = OpenProcess(0x0400 | 0x0010, false, pid);
-        if (processHandle == IntPtr.Zero) return (null,null);
+        if (processHandle == IntPtr.Zero) return (null, null);
 
         const int isb = 512;
         var sb = new StringBuilder(isb);
-        string filename=null;
-        string processname=null;
+        string filename = null;
+        string processname = null;
 
         if (GetModuleFileNameEx(processHandle, IntPtr.Zero, sb, isb) > 0) filename = sb.ToString();
         else filename = "";
@@ -906,7 +915,7 @@ internal class NativeMethods
 
     [DllImport("kernel32.dll")]
     internal static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
-       
+
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool CloseHandle(IntPtr hObject);
@@ -1120,7 +1129,7 @@ public struct RECT
 
     public override string ToString()
     {
-        return "RECT\n" + "\tleft:" + this.left.ToString() + "\n\ttop:" + this.left.ToString()+"\n\tright:"+this.right.ToString()+"\n\tbottom:"+this.bottom.ToString();
+        return "RECT\n" + "\tleft:" + this.left.ToString() + "\n\ttop:" + this.left.ToString() + "\n\tright:" + this.right.ToString() + "\n\tbottom:" + this.bottom.ToString();
     }
 }
 
