@@ -160,7 +160,7 @@ public class AutoClickerSub
 
         public override string ToString()
         {
-            return "WindowInfo\n" + "\t[hWnd]:" + this.hWnd.ToString() + "\n\t[ClassName]:" + this.ClassName.ToString() + "\n\t[Text]:" + this.Text.ToString() + "\n\t[ProcessName]:" + this.ProcessName.ToString() + "\n\t[FullPathName]:" + this.FullPathName.ToString() + "\n\t[Rect]:" + this.Rect.ToString();
+            return "WindowInfo\n" + "\t[hWnd]:" + this.hWnd.ToString() + "\n\t[ClassName]:" + this.ClassName.ToString() + "\n\t[Text]:" + this.Text.ToString() + "\n\t[ProcessName]:" + this.ProcessName.ToString() + "\n\t[FullPathName]:" + this.FullPathName.ToString() + "\n\t[Rect]:" + this.Rect.ToString() + "\n";
         }
     }
 
@@ -1129,7 +1129,7 @@ public struct RECT
 
     public override string ToString()
     {
-        return "RECT\n" + "\tleft:" + this.left.ToString() + "\n\ttop:" + this.left.ToString() + "\n\tright:" + this.right.ToString() + "\n\tbottom:" + this.bottom.ToString();
+        return "RECT\n" + "\tleft:" + this.left.ToString() + "\n\ttop:" + this.left.ToString() + "\n\tright:" + this.right.ToString() + "\n\tbottom:" + this.bottom.ToString() + "\n";
     }
 }
 
