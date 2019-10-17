@@ -84,7 +84,7 @@ public class AutoClickerSub
     public class EnumWindows
     {
         public List<WindowInfo> windowInfos;
-        public bool haveProcessName = false;
+        public bool haveWindowText = false;
         /// <summary>
         /// EnumWindows callback function
         /// </summary>
@@ -103,9 +103,9 @@ public class AutoClickerSub
                     uint ProcessID = 0;
                     uint targetThreadId = NativeMethods.GetWindowThreadProcessId(hWnd, out ProcessID);
                     (string filname, string processname) = NativeMethods.GetProceeAndFileName((int)ProcessID);
-                    if (true == haveProcessName)
+                    if (true == haveWindowText)
                     {
-                        if (processname.Length > 0) windowInfos.Add(new WindowInfo(hWnd, className, text, processname, filname, rect));
+                        if (text.Length > 0) windowInfos.Add(new WindowInfo(hWnd, className, text, processname, filname, rect));
                     }
                     else
                     {
@@ -255,11 +255,11 @@ public class AutoClickerSub
     /// make WindowInfo list
     /// </summary>
     /// <returns></returns>
-    public static List<WindowInfo> GetProcessList(bool _haveprocessname = false)
+    public static List<WindowInfo> GetProcessList(bool _havewindowtext = false)
     {
         var obj = new EnumWindows();
         obj.windowInfos = new List<WindowInfo>();
-        obj.haveProcessName = _haveprocessname;
+        obj.haveWindowText = _havewindowtext;
         NativeMethods.EnumWindows(obj.CalbackProc, IntPtr.Zero);
         return obj.windowInfos;
     }
@@ -398,20 +398,22 @@ public class AutoClickerSub
 
         OpenCvSharp.Point? tgtPoint = new OpenCvSharp.Point();
         OpenCvSharp.Point clickPoint = new OpenCvSharp.Point();
-        Mat matcaptureimage = new Mat();
-        Mat TemplateImage = new Mat();
-
-        if (args.useHDC) captureimage.CopyTo(matcaptureimage);
-        else Cv2.CvtColor(captureimage, matcaptureimage, ColorConversionCodes.BGR2GRAY);
-
-        if (args.useHDC) templatefile.MatImage.CopyTo(TemplateImage);
-        else templatefile.MatGrayImage.CopyTo(TemplateImage);
-
-        (ret, tgtPoint) = MatchTemplate(matcaptureimage, TemplateImage, args.threshold);
-        if (ret)
+        using (Mat matcaptureimage = new Mat())
+        using (Mat TemplateImage = new Mat())
         {
-            retcode = true;
-            clickPoint = MakeClickPoint(args, templatefile, tgtPoint);
+
+            if (args.useHDC) captureimage.CopyTo(matcaptureimage);
+            else Cv2.CvtColor(captureimage, matcaptureimage, ColorConversionCodes.BGR2GRAY);
+
+            if (args.useHDC) templatefile.MatImage.CopyTo(TemplateImage);
+            else templatefile.MatGrayImage.CopyTo(TemplateImage);
+
+            (ret, tgtPoint) = MatchTemplate(matcaptureimage, TemplateImage, args.threshold);
+            if (ret)
+            {
+                retcode = true;
+                clickPoint = MakeClickPoint(args, templatefile, tgtPoint);
+            }
         }
         return (retcode, tgtPoint, clickPoint);
     }
@@ -534,6 +536,7 @@ public class AutoClickerSub
     /// <returns></returns>
     public static (OpenCvSharp.Mat, POINT) GetCapture(args args)
     {
+        if (args == null) return (null, new POINT(0, 0));
         OpenCvSharp.Mat MatCapturedImage = null;
         Bitmap BitmapCapturedImage = null;
         Mat MatResizedImage = new Mat();
@@ -1027,9 +1030,6 @@ internal class NativeMethods
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, PreserveSig = false, SetLastError = true)]
     internal static extern void PostMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wparam, IntPtr lparam);
-
-    //    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    //    internal static extern IntPtr SendMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wparam, IntPtr lparam);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     internal static extern int SendMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wparam, IntPtr lparam);
