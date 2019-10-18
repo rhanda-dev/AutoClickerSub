@@ -890,6 +890,20 @@ public class AutoClickerSub
         }
         return bmpCapture;
     }
+
+    public static bool GetKeyState(char _char)
+    {
+        short ret = NativeMethods.GetKeyState(_char);
+        if (ret < 0) { return true; }
+        else return false;
+    }
+
+    public static bool GetAsyncKeyState(char _char)
+    {
+        short ret = NativeMethods.GetAsyncKeyState(_char);
+        if (ret != 0) { return true; }
+        else return false;
+    }
 }
 
 internal class NativeMethods
@@ -915,6 +929,12 @@ internal class NativeMethods
 
         return (filename, processname);
     }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern short GetAsyncKeyState(int vKey);
+
+    [DllImport("user32.dll")]
+    internal static extern short GetKeyState(int nVirtKey);
 
     [DllImport("kernel32.dll")]
     internal static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
