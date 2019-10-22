@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CA2008: TaskScheduler を渡さずにタスクを作成しない
+dotnet_diagnostic.CA2008.severity = none

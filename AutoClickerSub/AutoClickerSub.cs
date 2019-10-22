@@ -401,7 +401,6 @@ public class AutoClickerSub
         using (Mat matcaptureimage = new Mat())
         using (Mat TemplateImage = new Mat())
         {
-
             if (args.useHDC) captureimage.CopyTo(matcaptureimage);
             else Cv2.CvtColor(captureimage, matcaptureimage, ColorConversionCodes.BGR2GRAY);
 
@@ -656,8 +655,8 @@ public class AutoClickerSub
         WindowMessage _dclk = WindowMessage.WM_LBUTTONDBLCLK;
 
         IntPtr pos = new IntPtr(MakeDWord((ushort)_x, (ushort)_y));
-        IntPtr setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
-        IntPtr setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+        IntPtr setcursorbuttondownlparam;
+        IntPtr setcursormousemovelparam;
 
         switch (fwKeys)
         {
@@ -730,6 +729,59 @@ public class AutoClickerSub
                     NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
                     NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
                 }
+                break;
+
+            case MOUSEEVENT.SWIPE_UP:
+            case MOUSEEVENT.SWIPE_DOWN:
+            case MOUSEEVENT.SWIPE_LEFT:
+            case MOUSEEVENT.SWIPE_RIGHT:
+                int _dx = 0;
+                int _dy = 0;
+                int dx = 0;
+                int dy = 0;
+                switch (mouseevent)
+                {
+                    case MOUSEEVENT.SWIPE_UP:
+                        _dx = 0;
+                        _dy = -3;
+                        break;
+
+                    case MOUSEEVENT.SWIPE_DOWN:
+                        _dx = 0;
+                        _dy = 3;
+                        break;
+
+                    case MOUSEEVENT.SWIPE_LEFT:
+                        _dx = -3;
+                        _dy = 0;
+                        break;
+
+                    case MOUSEEVENT.SWIPE_RIGHT:
+                        _dx = 3;
+                        _dy = 0;
+                        break;
+
+                    default:
+                        break;
+                }
+                setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
+                setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
+                //NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+                NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
+                NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
+                NativeMethods.PostMessage(_hWnd, _down, new IntPtr((int)fwKeys), pos);
+
+                for (int i = 0; i < 20; i++)
+                {
+                    dx += (_dx * i);
+                    dy += (_dy * i);
+                    NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, new IntPtr(MakeDWord((ushort)_x + dx, (ushort)_y + dy)));
+                }
+
+                NativeMethods.PostMessage(_hWnd, _up, IntPtr.Zero, new IntPtr(MakeDWord((ushort)_x + _dx, (ushort)_y)));
+                NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, new IntPtr(MakeDWord((ushort)_x + _dx, (ushort)_y)));
+                _ = NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+                System.Threading.Thread.Sleep(50);
                 break;
 
             default:
@@ -1160,7 +1212,11 @@ public enum MOUSEEVENT
     DOUBLECLICK = 0x02,
     TRIPLECLICK = 0x03,
     WHEEL = 0x04,
-    MOVE = 0x10
+    MOVE = 0x10,
+    SWIPE_UP = 0x21,
+    SWIPE_DOWN = 0x22,
+    SWIPE_LEFT = 0x23,
+    SWIPE_RIGHT = 0x24
 }
 
 public enum SW
