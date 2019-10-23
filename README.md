@@ -1,9 +1,11 @@
 # AutoClickerSub
-<br>
+
 This software(dll) is control another application.<br>
 This software use OpenCVSharp4. see https://github.com/shimat/opencvsharp
 <br><br>
+
 # Usage
+
 Search application with TITLE.<br>
 IntPtr hWnd = GetWindowHandle(target_window_title)<br>
 
@@ -48,7 +50,9 @@ RECT rect = GetWindowRectangle(hwnd)<br>
 Set application window size.<br>
 SetWindowPos(hWnd, rect)<br>
 <br>
+
 # Install
+
 Copy anyware you like.<br>
 <br>
 # Sample.
