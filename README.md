@@ -17,16 +17,16 @@ tempatefilelist tmp =  GetTemplateFileList(target_directory_name)<br>
 
 ## Send Mouse Event to application.
 MouseEvent(IntPtr hWnd, MOUSEEVENT, x, y, int wheel, fwKeys)<br>
-MOUSEEVENT : <br>
+MOUSEEVENT<br>
 <li>MOUSEEVENT.CLICK</li>
-  <li>MOUSEEVENT.DBLCLICK</li>
-  <li>MOUSEEVENT.WHEEL</li>
-  <li>MOUSEEVENT.SWIPE_UP</li>
-  <li>MOUSEEVENT.SWIPE_DOWN</li>
-  <li>MOUSEEVENT.SWIPE_LEFT</li>
-  <li>MOUSEEVENT.SWIPE_RIGHT</li>
-  <br>
-fwKeys : <br>
+<li>MOUSEEVENT.DBLCLICK</li>
+<li>MOUSEEVENT.WHEEL</li>
+<li>MOUSEEVENT.SWIPE_UP</li>
+<li>MOUSEEVENT.SWIPE_DOWN</li>
+<li>MOUSEEVENT.SWIPE_LEFT</li>
+<li>MOUSEEVENT.SWIPE_RIGHT</li>
+<br>
+fwKeys<br>
 <li>fwKeys.MK_LBUTTON</li>
 <li>fwKeys.MK_RBUTTON</li>
 <li>fwKeys.MK_WHEEL</li>
