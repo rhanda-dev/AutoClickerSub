@@ -2,6 +2,7 @@
 This software is released under the MIT License, see LICENSE.txt.
 This software use OpenCVSharp4. see https://github.com/shimat/opencvsharp
 
+
 This software(dll) is a control another application.
 
 How To Use.
