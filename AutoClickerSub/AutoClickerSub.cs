@@ -292,7 +292,7 @@ public class AutoClickerSub
     }
 
     /// <summary>
-    /// make templatefile from 'filename'
+    /// make template file list from 'filename'
     /// </summary>
     /// <param name="filename"></param>
     /// <returns></returns>
@@ -348,7 +348,7 @@ public class AutoClickerSub
             ImgFileList.Sort();
 
             int i = 0;
-            foreach (string templatefilename in ImgFileList) // load templateimage in memory
+            foreach (string templatefilename in ImgFileList) // load template image into memory
             {
                 TemplateFile templateFile = MakeTemplateFile(templatefilename);
                 templateFile.Number = i;
@@ -407,7 +407,7 @@ public class AutoClickerSub
     }
 
     /// <summary>
-    /// check image in templatefiles.
+    /// check image in template files.
     /// </summary>
     /// <param name="_args"></param>
     /// <param name="_templatefiles"></param>
@@ -516,7 +516,7 @@ public class AutoClickerSub
 
     /// <summary>
     /// Get Target Windows's Capture use Hdc or not;
-    ///  return original captureimage,resized capture image, resize by X=dX, resize by Y=dY
+    ///  return original capture image,resized capture image, resize by X=dX, resize by Y=dY
     /// </summary>
     /// <param name="_args"></param>
     /// <returns></returns>
@@ -561,7 +561,7 @@ public class AutoClickerSub
     }
 
     /// <summary>
-    /// post keycode to _hWnd
+    /// post 'key code' to _hWnd
     /// </summary>
     /// <param name="_hWnd"></param>
     /// <param name="_vk"></param>
@@ -577,7 +577,7 @@ public class AutoClickerSub
     }
 
     /// <summary>
-    /// send keycode to _hWnd
+    /// send 'key code' to _hWnd
     /// </summary>
     /// <param name="_hWnd"></param>
     /// <param name="_vk"></param>
@@ -2150,7 +2150,7 @@ public enum SetWindowPosFlags : uint
     /// <remarks>SWP_NOOWNERZORDER</remarks>
     DoNotChangeOwnerZOrder = 0x0200,
     /// <summary>Does not redraw changes. If this flag is set, no repainting of any kind occurs. This applies to
-    /// the client area, the nonclient area (including the title bar and scroll bars), and any part of the parent
+    /// the client area, the non client area (including the title bar and scroll bars), and any part of the parent
     /// window uncovered as a result of the window being moved. When this flag is set, the application must
     /// explicitly invalidate or redraw any parts of the window and parent window that need redrawing.</summary>
     /// <remarks>SWP_NOREDRAW</remarks>
