@@ -39,7 +39,7 @@ RECT rect =	GetWindowRectangle(hwnd)
 Set application window size.
 SetWindowPos(hWnd, rect)
 
-
+---------
 Sample.
 SelectApp.ps1  powershell script for select application. execute this.
 SelectApp.xaml GUI
