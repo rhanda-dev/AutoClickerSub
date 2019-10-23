@@ -30,23 +30,23 @@ fwKeys<br>
 <li>fwKeys.MK_LBUTTON</li>
 <li>fwKeys.MK_RBUTTON</li>
 <li>fwKeys.MK_WHEEL</li>
-<br>
+<br><br>
 ## Check image is in application.
 (bool ret, POINT resized_click_point, POINT REALSIZE_CLICK_POINT) =	CheckImage(args, image_file_name)<br>
 ret = true. found.<br>
 resized_click_point. found point.<br>
-REALSIZE_CLICK_POINT. found point.<br>
+REALSIZE_CLICK_POINT. found point.<br><br>
 ## Check image's(in template file list) is in application.
 (bool ret, POINT resized_click_point, POINT REALSIZE_CLICK_POINT, matched_image, matched_file_name, matched_index) = TemplateMatch(args, template_file_list)<br>
 ret = true. found.<br>
 resized_click_point. found point.<br>
 REALSIZE_CLICK_POINT. found point.<br>
 matched_file_name. First matched file name.<br>
-matched_index. index of templatefilelist.<br>
+matched_index. index of templatefilelist.<br><br>
 ## Get application window size.
-RECT rect =	GetWindowRectangle(hwnd)<br>
+RECT rect =	GetWindowRectangle(hwnd)<br><br>
 ## Set application window size.
-SetWindowPos(hWnd, rect)<br>
+SetWindowPos(hWnd, rect)<br><br>
 # Sample.
 SelectApp.ps1  powershell script for select application. execute this.<br>
 SelectApp.xaml GUI<br>
