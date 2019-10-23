@@ -79,8 +79,9 @@ WindowInfo
 	}
 </pre>
 - IntPtr hWnd = GetWindowHandle(target_window_title)
-- args arg = SetArgs(IntPtr targetwindowhandle, bool isRealSize, bool UseColor, double magnification dx, double magnification dy, double threshold)
+- args arg = SetArgs(ntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, bool _usecolor = default, double _dX = 0.5, double _dY = 0.5, double _threshold = 0.8))
     - isRealSize  true is equals to dX =1, dY = 1
+    - usehdc true is capture window use Hdc.
     - UseColor true check color image.
     - magnification dX,dY <=n 1.
     - threshold is between 0.8 to 1.
