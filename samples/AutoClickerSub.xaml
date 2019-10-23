@@ -1,0 +1,107 @@
+﻿<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="AutoClickerSub" SizeToContent="Width">
+	<Window.Resources>
+		<DataTemplate x:Key="bitmapinserter">
+			<Border Background="LightBlue" BorderBrush="Black" BorderThickness="1">
+				<Image Width="auto" Height="auto" Source="{Binding Path=BitmapImage}" />
+			</Border>
+		</DataTemplate>
+	</Window.Resources>
+	<Viewbox Stretch="Uniform">
+		<Grid x:Name="gViewbox">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="auto" />
+				<RowDefinition Height="auto" />
+				<RowDefinition Height="auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="100*" />
+				<ColumnDefinition Width="auto" />
+				<ColumnDefinition Width="100*" />
+				<ColumnDefinition Width="auto" />
+				<ColumnDefinition Width="auto" />
+			</Grid.ColumnDefinitions>
+			<Border Grid.Row="0" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="5" BorderBrush="Black" BorderThickness="1" />
+			<Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" BorderBrush="Black" BorderThickness="0,0,0,1" />
+			<GridSplitter Grid.Row="1" Grid.RowSpan="3" Grid.Column="1" BorderBrush="Black" BorderThickness="1" />
+			<GridSplitter Grid.Row="1" Grid.RowSpan="3" Grid.Column="3" BorderBrush="Black" BorderThickness="1" />
+
+			<Grid Grid.Row="1" Grid.Column="0" Width="Auto" Height="Auto">
+				<StackPanel Grid.Row="0" Grid.Column="0" Width="Auto" Height="Auto" Orientation="Horizontal">
+					<Button x:Name="btnSetDirectory" Margin="2,2,0,0" Content="Change Directory" />
+				</StackPanel>
+			</Grid>
+			<Grid Grid.Row="2" Grid.Column="0" Width="Auto" Height="Auto">
+				<TextBlock x:Name="tbTemplatelist" Grid.Row="0" Grid.Column="1" Width="Auto" Height="Auto" Margin="2,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" FontSize="14" Text="tbTemplatelist" />
+			</Grid>
+			<Viewbox Grid.Row="3" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+				<DataGrid x:Name="dgFileList" Height="{Binding ElementName=imgCapture, Path=Height}" GridLinesVisibility="None" HeadersVisibility="Column" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeColumns="True" CanUserResizeRows="True" CanUserSortColumns="False">
+					<DataGrid.ColumnHeaderStyle>
+						<Style TargetType="DataGridColumnHeader">
+							<Setter Property="BorderThickness" Value="1,0,0,1" />
+							<Setter Property="BorderBrush" Value="Black" />
+							<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+							<Setter Property="VerticalContentAlignment" Value="Center" />
+							<Setter Property="TextBlock.TextAlignment" Value="Center" />
+						</Style>
+					</DataGrid.ColumnHeaderStyle>
+					<DataGrid.Columns>
+						<DataGridTextColumn Binding="{Binding Path=FileName}" Header="FileName" IsReadOnly="True">
+							<DataGridTextColumn.CellStyle>
+								<Style TargetType="DataGridCell">
+									<Setter Property="BorderThickness" Value="1,0,0,1" />
+									<Setter Property="BorderBrush" Value="Black" />
+								</Style>
+							</DataGridTextColumn.CellStyle>
+						</DataGridTextColumn>
+						<DataGridTemplateColumn CellTemplate="{StaticResource bitmapinserter}" Header="image" IsReadOnly="True">
+							<DataGridTemplateColumn.CellStyle>
+								<Style TargetType="DataGridCell">
+									<Setter Property="BorderThickness" Value="0,0,1,1" />
+									<Setter Property="BorderBrush" Value="Black" />
+								</Style>
+							</DataGridTemplateColumn.CellStyle>
+						</DataGridTemplateColumn>
+					</DataGrid.Columns>
+				</DataGrid>
+			</Viewbox>
+			<StackPanel Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
+				<TextBlock x:Name="txtAppWidth" VerticalAlignment="Center" FontSize="14" Text="0" />
+				<Label VerticalAlignment="Center" Content="x" FontSize="14" />
+				<TextBlock x:Name="txtAppHeight" VerticalAlignment="Center" FontSize="14" Text="0" />
+				<Label VerticalAlignment="Center" Content=" to " FontSize="14" />
+				<TextBlock x:Name="txtMagnification" VerticalAlignment="Center" FontSize="14" Text="()" />
+			</StackPanel>
+			<TextBlock x:Name="tbCapture" Grid.Row="2" Grid.Column="2" VerticalAlignment="Bottom" FontSize="14" Text="" />
+			<Grid Grid.Row="3" Grid.RowSpan="1" Grid.Column="2">
+				<Image x:Name="imgCapture" VerticalAlignment="Top" Stretch="Uniform">
+				</Image>
+			</Grid>
+			<Viewbox Grid.Row="1" Grid.RowSpan="3" Grid.Column="5" Width="auto" Margin="3,0,3,0" VerticalAlignment="Top" Stretch="Uniform">
+				<StackPanel Orientation="Vertical">
+					<Button x:Name="btnAUTO" Width="Auto" Height="25" Margin="0,2,2,0" Background="Violet" Content="AUTO" />
+					<Button x:Name="btnStop" Width="Auto" Height="25" Margin="0,2,2,0" Background="Gray" Content="Stop" />
+					<Button Width="75" Height="25" Visibility="Hidden" />
+					<Button x:Name="btnParam" Width="Auto" Height="25" Margin="0,2,2,0" Background="Violet" Content="Change Param" />
+					<TextBlock Width="75" Height="20" HorizontalAlignment="Left" Text="params" />
+					<CheckBox x:Name="chkRealSize" Height="25" VerticalContentAlignment="Center" Content="RealSize" />
+					<TextBlock Width="75" Height="20" HorizontalAlignment="Left" Text="by dX" />
+					<TextBox x:Name="txtWidth" Width="50" Height="20" BorderThickness="2" HorizontalContentAlignment="right" />
+					<TextBlock Width="75" Height="20" HorizontalAlignment="Left" Text="by dY" />
+					<TextBox x:Name="txtHeight" Width="50" Height="20" BorderThickness="2" HorizontalContentAlignment="right" />
+					<CheckBox x:Name="chkUseHDC" Height="25" VerticalContentAlignment="Center" Content="Use HDC" />
+					<CheckBox x:Name="chkColor" Height="25" VerticalContentAlignment="Center" Content="Use Color" />
+					<TextBlock Width="75" Height="20" HorizontalAlignment="Left" Text="Threshold" />
+					<TextBox x:Name="txtThreshold" Width="50" Height="20" BorderThickness="2" HorizontalContentAlignment="right" />
+					<Button Width="75" Height="25" Visibility="Hidden" />
+					<Button x:Name="btnCheck" Width="75" Height="25" Margin="0,2,2,0" Content="Check" />
+					<CheckBox x:Name="chkClick" Height="25" VerticalContentAlignment="Center" Content="Click" />
+					<CheckBox x:Name="chkAskClick" Height="25" VerticalContentAlignment="Center" Content="AskClick" />
+					<Button Width="75" Height="25" Visibility="Hidden" />
+					<Button x:Name="btnClose" Width="75" Height="25" Margin="0,2,2,2" Background="Green" Content="btnClose" Foreground="White" />
+				</StackPanel>
+			</Viewbox>
+		</Grid>
+	</Viewbox>
+</Window>

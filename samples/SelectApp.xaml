@@ -1,0 +1,60 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="SelectApp" SizeToContent="WidthAndHeight" FontSize="14" Topmost="True">
+
+	<Viewbox Stretch="Uniform" VerticalAlignment="Top" Width="310" Height="420">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<Grid Grid.Row="0" Grid.Column="0" Margin="0,0,2,0">
+				<DockPanel>
+					<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+						<TextBlock Text="hWnd:" />
+						<TextBlock x:Name="tbSelected" Margin="2,0,0,0" Text="{Binding ElementName=dgApplicationList, Path=SelectedItem.hWnd}" />
+					</StackPanel>
+					<Button x:Name="btnRefresh" DockPanel.Dock="Left" Margin="2,2,0,2" HorizontalAlignment="Left" Background="LightGreen" Content="Refresh" />
+					<CheckBox x:Name="chkShow" DockPanel.Dock="Left" Margin="0,0,0,0" Content="Expand  " VerticalAlignment="Center" />
+					<Button x:Name="btnSelect" DockPanel.Dock="Right" Margin="2,2,0,2" Background="LightPink" Content="Select" IsDefault="True" />
+					<Button x:Name="btnCancel" DockPanel.Dock="Right" Margin="2,2,0,2" Background="Gray" Content="Cancel" />
+				</DockPanel>
+			</Grid>
+			<Grid Grid.Row="1" Grid.Column="0" Margin="2,0,2,0">
+				<StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+					<DataGrid x:Name="dgApplicationList" MaxWidth="300" MaxHeight="400" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeColumns="True" CanUserResizeRows="True" CanUserSortColumns="False" GridLinesVisibility="None" HeadersVisibility="Column" HorizontalScrollBarVisibility="Disabled">
+						<DataGrid.ColumnHeaderStyle>
+							<Style TargetType="{x:Type DataGridColumnHeader}">
+								<Setter Property="BorderThickness" Value="1,0,0,1" />
+								<Setter Property="BorderBrush" Value="Black" />
+								<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+								<Setter Property="VerticalContentAlignment" Value="Center" />
+								<Setter Property="TextBlock.TextAlignment" Value="Center" />
+							</Style>
+						</DataGrid.ColumnHeaderStyle>
+						<DataGrid.Columns>
+							<DataGridTextColumn Binding="{Binding hWnd}" Header="hWmd" Width="auto" IsReadOnly="True">
+								<DataGridTextColumn.CellStyle>
+									<Style TargetType="{x:Type DataGridCell}">
+										<Setter Property="BorderThickness" Value="1,0,0,1" />
+										<Setter Property="BorderBrush" Value="Black" />
+									</Style>
+								</DataGridTextColumn.CellStyle>
+							</DataGridTextColumn>
+							<DataGridTextColumn Binding="{Binding Text}" Header="Title" Width="auto" IsReadOnly="True">
+								<DataGridTextColumn.CellStyle>
+									<Style TargetType="{x:Type DataGridCell}">
+										<Setter Property="BorderThickness" Value="1,0,1,1" />
+										<Setter Property="BorderBrush" Value="Black" />
+									</Style>
+								</DataGridTextColumn.CellStyle>
+							</DataGridTextColumn>
+						</DataGrid.Columns>
+					</DataGrid>
+				</StackPanel>
+			</Grid>
+		</Grid>
+	</Viewbox>
+</Window>
