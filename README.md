@@ -1,9 +1,9 @@
-AutoClickerSub<br>
+# AutoClickerSub
 <br>
 This software(dll) is control another application.<br>
 This software use OpenCVSharp4. see https://github.com/shimat/opencvsharp
 <br><br>
-Usage<br>
+# Usage
 Search application with TITLE.<br>
 IntPtr hWnd = GetWindowHandle(target_window_title)<br>
 
@@ -48,13 +48,13 @@ RECT rect = GetWindowRectangle(hwnd)<br>
 Set application window size.<br>
 SetWindowPos(hWnd, rect)<br>
 <br>
-Sample. <br>
+# Install
+Copy anyware you like.<br>
+<br>
+# Sample.
 SelectApp.ps1 powershell script for select application. execute this.<br>
 SelectApp.xaml GUI<br>
 AutoClickerSub.ps1 powershell script for sample usage.<br>
 AutoClickerSub.xaml GUI<br>
 <br>
- Install<br>
- Copy anyware you like.<br>
-<br>
-End.<br>
+# End
