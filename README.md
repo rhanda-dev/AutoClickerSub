@@ -27,7 +27,7 @@ This software use [OpenCVSharp4](https://github.com/shimat/opencvsharp)
 # Usage
 
 Include Dll your application.<br>
-Also use this with powershell script about this. <br>
+Also use with powershell script about this. <br>
 
 ```powershell:sample.ps1
 $dllpath = "C:\Anywhere\AutoClickerSub"
@@ -39,6 +39,7 @@ Write-Host $applist
 
 <li>Result</li>
 <pre>
+Process List:
 WindowInfo
         [hWnd]:1769888
         [ClassName]:Chrome_WidgetWin_1
@@ -52,7 +53,6 @@ WindowInfo
         bottom:942
 .....
 </pre>
-<ul>
 
 # Syntax
 
