@@ -1,6 +1,6 @@
 # AutoClickerSub
 
-This software is released under the MIT License, see [LICENSE.txt](./LICENSE.TXT).<br>
+This software is released under the MIT License, see [LICENSE.txt](https://github.com/rhanda-dev/AutoClickerSub/blob/master/LICENSE.txt).<br>
 This software use [OpenCVSharp4](https://github.com/shimat/opencvsharp)
 
 
