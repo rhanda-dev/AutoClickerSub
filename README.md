@@ -16,7 +16,7 @@ Make image's list at 'target_directory_name'<br>
 tempatefilelist tmp = GetTemplateFileList(target_directory_name)<br>
 <br>
 Send Mouse Event to application.<br>
-MouseEvent(IntPtr hWnd, MOUSEEVENT, x, y, int wheel, fwKeys)<br>
+<b>MouseEvent(IntPtr hWnd, MOUSEEVENT, x, y, int wheel, fwKeys)</b><br>
 MOUSEEVENT<br>
 •MOUSEEVENT.CLICK<br>
 •MOUSEEVENT.DBLCLICK<br>
@@ -31,13 +31,13 @@ fwKeys<br>
 •fwKeys.MK_WHEEL<br>
 <br>
 Check image is in application.<br>
-(bool ret, POINT resized_click_point, POINT REALSIZE_CLICK_POINT) = CheckImage(args, image_file_name)
+<b>(bool ret, POINT resized_click_point, POINT REALSIZE_CLICK_POINT) = CheckImage(args, image_file_name)</b><br>
 ret = true. found.<br>
 resized_click_point. found point.<br>
 REALSIZE_CLICK_POINT. found point.<br>
 <br>
 Check image's(in template file list) is in application.<br>
- (bool ret, POINT resized_click_point, POINT REALSIZE_CLICK_POINT, matched_image, matched_file_name, matched_index) = TemplateMatch(args, template_file_list)<br>
+<b>(bool ret, POINT resized_click_point, POINT REALSIZE_CLICK_POINT, matched_image, matched_file_name, matched_index) = TemplateMatch(args, template_file_list)</b><br>
 ret = true. found.<br>
 resized_click_point. found point.<br>
 REALSIZE_CLICK_POINT. found point.<br>
@@ -45,10 +45,10 @@ matched_file_name. First matched file name.<br>
 matched_index. index of templatefilelist.<br>
 <br>
 Get application window size.<br>
-RECT rect = GetWindowRectangle(hwnd)<br>
+<b>RECT rect = GetWindowRectangle(hwnd)</b><br>
 <br>
 Set application window size.<br>
-SetWindowPos(hWnd, rect)<br>
+<b>SetWindowPos(hWnd, rect)</b><br>
 <br>
 
 # Install
