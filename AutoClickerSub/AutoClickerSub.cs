@@ -200,7 +200,7 @@ public class AutoClickerSub
     /// <param name="hWnd"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string GetWindowClassName(IntPtr hWnd)
+    private static string GetWindowClassName(IntPtr hWnd)
     {
         StringBuilder buffer = new StringBuilder(128);
         _ = NativeMethods.GetClassName(hWnd, buffer, buffer.Capacity);
@@ -213,7 +213,7 @@ public class AutoClickerSub
     /// <param name="hWnd"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string GetWindowText(IntPtr hWnd)
+    private static string GetWindowText(IntPtr hWnd)
     {
         var length = NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
         var buffer = new StringBuilder(length);
@@ -227,7 +227,7 @@ public class AutoClickerSub
     /// <param name="hWnd"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static RECT GetWindowRectangle(IntPtr hWnd)
+    private static RECT GetWindowRectangle(IntPtr hWnd)
     {
         RECT rect = new RECT();
         _ = NativeMethods.GetWindowRect(hWnd, ref rect);
@@ -270,7 +270,7 @@ public class AutoClickerSub
     /// <param name="_title"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IntPtr GetWindowHandle(string _title)
+    private static IntPtr GetWindowHandle(string _title)
     {
         if (string.IsNullOrEmpty(_title)) return IntPtr.Zero;
         return NativeMethods.FindWindow(null, _title);
@@ -548,7 +548,7 @@ public class AutoClickerSub
     /// GetPreviousProcess
     /// </summary>
     /// <returns></returns>
-    public static Process GetPreviousProcess()
+    private static Process GetPreviousProcess()
     {
         Process curProcess = Process.GetCurrentProcess();
         Process[] allProcesses = Process.GetProcessesByName(curProcess.ProcessName);
@@ -588,32 +588,6 @@ public class AutoClickerSub
 
         _ = NativeMethods.SendMessage(_hWnd, WindowMessage.WM_KEYDOWN, new IntPtr((int)_vk), lparamKEYDOWN);
         _ = NativeMethods.SendMessage(_hWnd, WindowMessage.WM_KEYUP, new IntPtr((int)_vk), lparamKEYUP);
-    }
-
-    /// <summary>
-    /// click point(_X, _y) in _hWnd
-    /// </summary>
-    /// <param name="_hWnd"></param>
-    /// <param name="_x"></param>
-    /// <param name="_y"></param>
-    public static void MouseLeftClick(IntPtr _hWnd, double _x, double _y)
-    {
-        Task task = Task.Factory.StartNew(() =>
-        {
-            IntPtr pos = new IntPtr(MakeDWord((ushort)_x, (ushort)_y));
-            IntPtr setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
-            IntPtr setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
-
-            NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
-            NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
-            NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
-            NativeMethods.PostMessage(_hWnd, WindowMessage.WM_LBUTTONDOWN, new IntPtr((int)fwKeys.MK_LBUTTON), pos);
-            NativeMethods.PostMessage(_hWnd, WindowMessage.WM_LBUTTONUP, IntPtr.Zero, pos);
-            NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
-            NativeMethods.PostMessage(_hWnd, WindowMessage.WM_LBUTTONUP, IntPtr.Zero, pos);
-            System.Threading.Thread.Sleep(25);
-        });
-        task.Wait();
     }
 
     /// <summary>
@@ -793,7 +767,7 @@ public class AutoClickerSub
     /// <param name="x"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int CalculateAbsoluteCoordinateX(int x)
+    private static int CalculateAbsoluteCoordinateX(int x)
     {
         return (x * 65536) / NativeMethods.GetSystemMetrics(SystemMetric.SM_CXSCREEN);
     }
@@ -804,7 +778,7 @@ public class AutoClickerSub
     /// <param name="y"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int CalculateAbsoluteCoordinateY(int y)
+    private static int CalculateAbsoluteCoordinateY(int y)
     {
         return (y * 65536) / NativeMethods.GetSystemMetrics(SystemMetric.SM_CYSCREEN);
     }
@@ -815,7 +789,7 @@ public class AutoClickerSub
     /// <param name="_word"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long HighWord(int _word)
+    private static long HighWord(int _word)
     {
         return ((_word & 0xFFFF0000) >> 16);
     }
@@ -826,7 +800,7 @@ public class AutoClickerSub
     /// <param name="_word"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long LowWord(int _word)
+    private static long LowWord(int _word)
     {
         return (_word & 0x0000FFFF);
     }
@@ -838,12 +812,12 @@ public class AutoClickerSub
     /// <param name="_high"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long MakeDWord(long _low, long _high)
+    private static long MakeDWord(long _low, long _high)
     {
         return _high << 16 | (_low & 0xffff);
     }
 
-    public static Bitmap GetWindowCaptureHdc(IntPtr hWnd)
+    private static Bitmap GetWindowCaptureHdc(IntPtr hWnd)
     {
         RECT rect = new RECT();
         if (!NativeMethods.GetClientRect(hWnd, ref rect)) return null;
@@ -876,7 +850,7 @@ public class AutoClickerSub
     /// </summary>
     /// <param name="_hWnd"></param>
     /// <returns></returns>
-    public static Bitmap GetWindowCapture(IntPtr _hWnd)
+    private static Bitmap GetWindowCapture(IntPtr _hWnd)
     {
         Rectangle rect;
         RECT clientRect = new RECT();
@@ -924,7 +898,7 @@ public class AutoClickerSub
 
 internal class NativeMethods
 {
-    public static (string, string) GetProceeAndFileName(int pid)
+    internal static (string, string) GetProceeAndFileName(int pid)
     {
         var processHandle = OpenProcess(0x0400 | 0x0010, false, pid);
         if (processHandle == IntPtr.Zero) return (null, null);
