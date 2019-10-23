@@ -169,7 +169,8 @@ public class AutoClickerSub
     /// </summary>
     /// <param name="hWnd"></param>
     /// <returns></returns>
-    public WindowInfo GetWindowInfo(IntPtr hWnd)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static WindowInfo GetWindowInfo(IntPtr hWnd)
     {
         var className = GetWindowClassName(hWnd);
         var text = GetWindowText(hWnd);
@@ -185,13 +186,12 @@ public class AutoClickerSub
     /// </summary>
     /// <param name="_hWnd"></param>
     /// <param name="rect"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SetWindowPos(IntPtr _hWnd, RECT rect)
     {
-        NativeMethods.ShowWindow(_hWnd, nCmdShow.SW_RESTORE);
-        NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_TOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SetWindowPosFlags.AsynchronousWindowPosition | SetWindowPosFlags.ShowWindow);
-
-        // target app to nottopmost
-        NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_NOTOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SetWindowPosFlags.AsynchronousWindowPosition | SetWindowPosFlags.ShowWindow);
+        _ = NativeMethods.ShowWindow(_hWnd, nCmdShow.SW_RESTORE);
+        _ = NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_TOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SetWindowPosFlags.AsynchronousWindowPosition | SetWindowPosFlags.ShowWindow);
+        _ = NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_NOTOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SetWindowPosFlags.AsynchronousWindowPosition | SetWindowPosFlags.ShowWindow);
     }
 
     /// <summary>
@@ -203,7 +203,7 @@ public class AutoClickerSub
     public static string GetWindowClassName(IntPtr hWnd)
     {
         StringBuilder buffer = new StringBuilder(128);
-        NativeMethods.GetClassName(hWnd, buffer, buffer.Capacity);
+        _ = NativeMethods.GetClassName(hWnd, buffer, buffer.Capacity);
         return buffer.ToString();
     }
 
@@ -217,7 +217,7 @@ public class AutoClickerSub
     {
         var length = NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
         var buffer = new StringBuilder(length);
-        NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXT, new IntPtr(length + 1), buffer);
+        _ = NativeMethods.SendMessage(hWnd, WindowMessage.WM_GETTEXT, new IntPtr(length + 1), buffer);
         return buffer.ToString();
     }
 
@@ -230,15 +230,15 @@ public class AutoClickerSub
     public static RECT GetWindowRectangle(IntPtr hWnd)
     {
         RECT rect = new RECT();
-        NativeMethods.GetWindowRect(hWnd, ref rect);
+        _ = NativeMethods.GetWindowRect(hWnd, ref rect);
         return rect;
     }
 
     /// <summary>
-    /// set AutoClickerSub paramaters
+    /// set AutoClickerSub parameters
     /// </summary>
     /// <param name="_hWnd">target application window handle/</param>
-    /// <param name="_isrealsize">image dont resized. same as _dX,_dY =1.</param>
+    /// <param name="_isrealsize">image don't resized. same as _dX,_dY =1.</param>
     /// <param name="_usehdc">get capture with HDC. default is false;</param>
     /// <param name="_usecolor">compare with original color. default is false, compare gray mode.</param>
     /// <param name="_dX">image width resized magnification.</param>
@@ -269,36 +269,26 @@ public class AutoClickerSub
     /// </summary>
     /// <param name="_title"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IntPtr GetWindowHandle(string _title)
     {
         if (string.IsNullOrEmpty(_title)) return IntPtr.Zero;
         return NativeMethods.FindWindow(null, _title);
-        /*
-        Process[] p = System.Diagnostics.Process.GetProcessesByName(_title);
-        foreach (System.Diagnostics.Process ps in p)
-        {
-            if ((ps.MainWindowHandle != IntPtr.Zero) && (ps.MainWindowHandle != null))
-            {
-                return ps.MainWindowHandle;
-            }
-        }
-        return IntPtr.Zero;
-        */
     }
 
     /// <summary>
     /// check image in target application window. image set by filename.
     /// </summary>
-    /// <param name="args"></param>
-    /// <param name="templatefilename"></param>
+    /// <param name="_args"></param>
+    /// <param name="_templatefilename"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args args = default, String templatefilename = default)
+    public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args _args = default, String _templatefilename = default)
     {
-        if ((args == default) || (templatefilename == default)) return (false, null, null);
-        (OpenCvSharp.Mat captureimage, POINT _) = GetCapture(args);
-        (bool retcode, OpenCvSharp.Point? tgtPoint, OpenCvSharp.Point? clickPoint) = CheckImage(args, captureimage, templatefilename);
-        return (retcode, tgtPoint, clickPoint);
+        if ((_args == default) || (_templatefilename == default)) return (false, null, null);
+        (OpenCvSharp.Mat captureimage, POINT _) = GetCapture(_args);
+        (bool ret, OpenCvSharp.Point? tgtPoint, OpenCvSharp.Point? clickPoint) = CheckImage(_args, captureimage, _templatefilename);
+        return (ret, tgtPoint, clickPoint);
     }
 
     /// <summary>
@@ -306,7 +296,6 @@ public class AutoClickerSub
     /// </summary>
     /// <param name="filename"></param>
     /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static TemplateFile MakeTemplateFile(string filename = default)
     {
         if (filename == default) return null;
@@ -338,7 +327,7 @@ public class AutoClickerSub
 
     /// <summary>
     /// get template image file's in _path
-    ///     image file is extention in system decode.(ImageCodecInfo)
+    ///     image file is extension in system decode.(ImageCodecInfo)
     /// </summary>
     /// <param name="templateFilePath"></param>
     /// <returns></returns>
@@ -346,7 +335,7 @@ public class AutoClickerSub
     {
         if (string.IsNullOrEmpty(templateFilePath)) { return null; }
 
-        string[] IMAGE_SEARCH_PATTERN_ALL = ImageCodecInfo.GetImageDecoders().Select(ici => ici.FilenameExtension.Split(';')).Aggregate((current, next) => current.Concat(next).ToArray()); // imagefile extention
+        string[] IMAGE_SEARCH_PATTERN_ALL = ImageCodecInfo.GetImageDecoders().Select(ici => ici.FilenameExtension.Split(';')).Aggregate((current, next) => current.Concat(next).ToArray()); // image file extension
         List<string> ImgFileList = new List<string>();
         Collection<TemplateFile> templatefiles = new Collection<TemplateFile>();
         templatefiles.Clear();
@@ -376,22 +365,22 @@ public class AutoClickerSub
                 templatefiles.Clear(); // nothing found
                 return null;
             }
-            throw e;
+            throw;
         }
     }
 
     /// <summary>
     /// check image in target application window. image set by user.
     /// </summary>
-    /// <param name="args"></param>
-    /// <param name="captureimage"></param>
-    /// <param name="templatefilename"></param>
+    /// <param name="_args"></param>
+    /// <param name="_captureimage"></param>
+    /// <param name="_templatefilename"></param>
     /// <returns></returns>
-    private static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args args = default, OpenCvSharp.Mat captureimage = default, String templatefilename = default)
+    private static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?) CheckImage(args _args = default, OpenCvSharp.Mat _captureimage = default, String _templatefilename = default)
     {
-        if ((args == default) || (captureimage == default) || (templatefilename == default)) return (false, null, null);
+        if ((_args == default) || (_captureimage == default) || (_templatefilename == default)) return (false, null, null);
 
-        TemplateFile templatefile = MakeTemplateFile(templatefilename);
+        TemplateFile templatefile = MakeTemplateFile(_templatefilename);
 
         bool ret;
         bool retcode = false;
@@ -401,17 +390,17 @@ public class AutoClickerSub
         using (Mat matcaptureimage = new Mat())
         using (Mat TemplateImage = new Mat())
         {
-            if (args.useHDC) captureimage.CopyTo(matcaptureimage);
-            else Cv2.CvtColor(captureimage, matcaptureimage, ColorConversionCodes.BGR2GRAY);
+            if (_args.useHDC) _captureimage.CopyTo(matcaptureimage);
+            else Cv2.CvtColor(_captureimage, matcaptureimage, ColorConversionCodes.BGR2GRAY);
 
-            if (args.useHDC) templatefile.MatImage.CopyTo(TemplateImage);
+            if (_args.useHDC) templatefile.MatImage.CopyTo(TemplateImage);
             else templatefile.MatGrayImage.CopyTo(TemplateImage);
 
-            (ret, tgtPoint) = MatchTemplate(matcaptureimage, TemplateImage, args.threshold);
+            (ret, tgtPoint) = MatchTemplate(matcaptureimage, TemplateImage, _args.threshold);
             if (ret)
             {
                 retcode = true;
-                clickPoint = MakeClickPoint(args, templatefile, tgtPoint);
+                clickPoint = MakeClickPoint(_args, templatefile, tgtPoint);
             }
         }
         return (retcode, tgtPoint, clickPoint);
@@ -420,14 +409,14 @@ public class AutoClickerSub
     /// <summary>
     /// check image in templatefiles.
     /// </summary>
-    /// <param name="args"></param>
-    /// <param name="templatefiles"></param>
+    /// <param name="_args"></param>
+    /// <param name="_templatefiles"></param>
     /// <returns></returns>
-    public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?, OpenCvSharp.Mat, string, int?) TemplateMatch(args args = default, Collection<TemplateFile> templatefiles = default)
+    public static (bool, OpenCvSharp.Point?, OpenCvSharp.Point?, OpenCvSharp.Mat, string, int?) TemplateMatch(args _args = default, Collection<TemplateFile> _templatefiles = default)
     {
-        if (args == default || templatefiles == default) return (false, null, null, null, null, null);
+        if (_args == default || _templatefiles == default) return (false, null, null, null, null, null);
 
-        (OpenCvSharp.Mat captureimage, POINT _) = GetCapture(args);
+        (OpenCvSharp.Mat captureimage, POINT _) = GetCapture(_args);
 
         bool ret;
         bool retcode = false; ;
@@ -441,22 +430,22 @@ public class AutoClickerSub
         using (OpenCvSharp.Mat matCaptureImage = new OpenCvSharp.Mat())
         using (OpenCvSharp.Mat TemplateImage = new Mat())
         {
-            if (args.useColor) captureimage.CopyTo(matCaptureImage);
+            if (_args.useColor) captureimage.CopyTo(matCaptureImage);
             else Cv2.CvtColor(captureimage, matCaptureImage, ColorConversionCodes.BGR2GRAY);
 
-            foreach (TemplateFile templatefile in templatefiles)
+            foreach (TemplateFile templatefile in _templatefiles)
             {
-                if (args.useColor) templatefile.MatImage.CopyTo(TemplateImage);
+                if (_args.useColor) templatefile.MatImage.CopyTo(TemplateImage);
                 else templatefile.MatGrayImage.CopyTo(TemplateImage);
 
-                (ret, tgtPoint) = MatchTemplate(matCaptureImage, TemplateImage, args.threshold);
+                (ret, tgtPoint) = MatchTemplate(matCaptureImage, TemplateImage, _args.threshold);
                 if (ret)
                 {
                     retcode = true;
                     TemplateImage.CopyTo(matMatchedTemplateImage);
                     MatchedTemplateFileName = templatefile.FileName.ToString();
                     number = templatefile.Number;
-                    clickPoint = MakeClickPoint(args, templatefile, tgtPoint);
+                    clickPoint = MakeClickPoint(_args, templatefile, tgtPoint);
 
                     break;
                 }
@@ -466,13 +455,13 @@ public class AutoClickerSub
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static OpenCvSharp.Point MakeClickPoint(args args, TemplateFile templatefile, OpenCvSharp.Point? tgtPoint)
+    private static OpenCvSharp.Point MakeClickPoint(args _args, TemplateFile _templatefile, OpenCvSharp.Point? _tgtPoint)
     {
         OpenCvSharp.Point clickPoint = new OpenCvSharp.Point(0, 0);
         string _spX = "000";
         string _spY = "000";
         System.Text.RegularExpressions.Regex r = new System.Text.RegularExpressions.Regex(@"[XY]+[-]?\d{3}", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        System.Text.RegularExpressions.Match m = r.Match(templatefile.FileName.ToString());
+        System.Text.RegularExpressions.Match m = r.Match(_templatefile.FileName.ToString());
         while (m.Success)
         {
             var s = m.Value;
@@ -490,8 +479,8 @@ public class AutoClickerSub
         }
         int _pX = int.Parse(_spX);
         int _pY = int.Parse(_spY);
-        clickPoint.X = (int)((tgtPoint?.X + (templatefile.MatGrayImage.Width / 2.0) + _pX) / args.dX);
-        clickPoint.Y = (int)((tgtPoint?.Y + (templatefile.MatGrayImage.Height / 2.0) + _pY) / args.dY);
+        clickPoint.X = (int)((_tgtPoint?.X + (_templatefile.MatGrayImage.Width / 2.0) + _pX) / _args.dX);
+        clickPoint.Y = (int)((_tgtPoint?.Y + (_templatefile.MatGrayImage.Height / 2.0) + _pY) / _args.dY);
         return clickPoint;
     }
     /// <summary>
@@ -501,7 +490,6 @@ public class AutoClickerSub
     /// <param name="matTemplate"></param>
     /// <param name="threshold"></param>
     /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (bool ret, OpenCvSharp.Point? maxPoint) MatchTemplate(Mat matTarget = default, Mat matTemplate = default, double threshold = 0.8)
     {
         if (matTarget == default || matTemplate == default) return (false, null);
@@ -527,29 +515,28 @@ public class AutoClickerSub
     }
 
     /// <summary>
-    /// Get Target Windows's Capture use hdc or not;
-    ///  return original captureimage,resized capture image, ressize by X=dX, resizie by Y=dY
+    /// Get Target Windows's Capture use Hdc or not;
+    ///  return original captureimage,resized capture image, resize by X=dX, resize by Y=dY
     /// </summary>
-    /// <param name="hWnd"></param>
-    /// <param name="useHdc"></param>
+    /// <param name="_args"></param>
     /// <returns></returns>
-    public static (OpenCvSharp.Mat, POINT) GetCapture(args args)
+    public static (OpenCvSharp.Mat, POINT) GetCapture(args _args)
     {
-        if (args == null) return (null, new POINT(0, 0));
+        if (_args == null) return (null, new POINT(0, 0));
         OpenCvSharp.Mat MatCapturedImage = null;
         Bitmap BitmapCapturedImage = null;
         Mat MatResizedImage = new Mat();
         POINT capturedsize = new POINT(0, 0);
 
-        using (BitmapCapturedImage = args.useHDC ? GetWindowCaptureHdc(args.hWnd) : GetWindowCapture(args.hWnd))
+        using (BitmapCapturedImage = _args.useHDC ? GetWindowCaptureHdc(_args.hWnd) : GetWindowCapture(_args.hWnd))
         {
             if (BitmapCapturedImage == null)
             {
                 return (null, capturedsize);
             }
             MatCapturedImage = OpenCvSharp.Extensions.BitmapConverter.ToMat(BitmapCapturedImage);
-            if (args.isRealSize) MatCapturedImage.CopyTo(MatResizedImage);
-            else Cv2.Resize(MatCapturedImage, MatResizedImage, new OpenCvSharp.Size(MatCapturedImage.Width * args.dX, MatCapturedImage.Height * args.dY), 0, 0, InterpolationFlags.Lanczos4); // resize to
+            if (_args.isRealSize) MatCapturedImage.CopyTo(MatResizedImage);
+            else Cv2.Resize(MatCapturedImage, MatResizedImage, new OpenCvSharp.Size(MatCapturedImage.Width * _args.dX, MatCapturedImage.Height * _args.dY), 0, 0, InterpolationFlags.Lanczos4); // resize to
             capturedsize.X = MatCapturedImage.Width;
             capturedsize.Y = MatCapturedImage.Height;
             MatCapturedImage.Dispose();
@@ -568,15 +555,7 @@ public class AutoClickerSub
 
         foreach (Process checkProcess in allProcesses)
         {
-            if (checkProcess.Id != curProcess.Id)
-            {
-                if (String.Compare(
-                        checkProcess.MainModule.FileName,
-                        curProcess.MainModule.FileName, true) == 0)
-                {
-                    return checkProcess;
-                }
-            }
+            if ((checkProcess.Id != curProcess.Id)&& (string.Compare(checkProcess.MainModule.FileName, curProcess.MainModule.FileName, true) == 0)) return checkProcess;
         }
         return null;
     }
@@ -607,8 +586,8 @@ public class AutoClickerSub
         IntPtr lparamKEYDOWN = (IntPtr)((0x00 << 24) | (NativeMethods.MapVirtualKey((uint)_vk, 0) << 16) | 0x01);
         IntPtr lparamKEYUP = (IntPtr)((0xC0 << 24) | (NativeMethods.MapVirtualKey((uint)_vk, 0) << 16) | 0x01);
 
-        NativeMethods.SendMessage(_hWnd, WindowMessage.WM_KEYDOWN, new IntPtr((int)_vk), lparamKEYDOWN);
-        NativeMethods.SendMessage(_hWnd, WindowMessage.WM_KEYUP, new IntPtr((int)_vk), lparamKEYUP);
+        _ = NativeMethods.SendMessage(_hWnd, WindowMessage.WM_KEYDOWN, new IntPtr((int)_vk), lparamKEYDOWN);
+        _ = NativeMethods.SendMessage(_hWnd, WindowMessage.WM_KEYUP, new IntPtr((int)_vk), lparamKEYUP);
     }
 
     /// <summary>
@@ -622,12 +601,12 @@ public class AutoClickerSub
         Task task = Task.Factory.StartNew(() =>
         {
             IntPtr pos = new IntPtr(MakeDWord((ushort)_x, (ushort)_y));
-            IntPtr setcursorlbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
+            IntPtr setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
             IntPtr setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
 
             NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
             NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
-            NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorlbuttondownlparam);
+            NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
             NativeMethods.PostMessage(_hWnd, WindowMessage.WM_LBUTTONDOWN, new IntPtr((int)fwKeys.MK_LBUTTON), pos);
             NativeMethods.PostMessage(_hWnd, WindowMessage.WM_LBUTTONUP, IntPtr.Zero, pos);
             NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
@@ -641,12 +620,12 @@ public class AutoClickerSub
     /// invoke mouse event
     /// </summary>
     /// <param name="_hWnd"></param>
-    /// <param name="mouseevent"></param>
+    /// <param name="_mouseevent"></param>
     /// <param name="_x"></param>
     /// <param name="_y"></param>
     /// <param name="wheel"></param>
     /// <param name="fwKeys"></param>
-    public static bool MouseEvent(IntPtr _hWnd, MOUSEEVENT mouseevent = MOUSEEVENT.CLICK, double _x = 0, double _y = 0, int wheel = 0, fwKeys fwKeys = fwKeys.MK_LBUTTON)
+    public static bool MouseEvent(IntPtr _hWnd, MOUSEEVENT _mouseevent = MOUSEEVENT.CLICK, double _x = 0, double _y = 0, int wheel = 0, fwKeys fwKeys = fwKeys.MK_LBUTTON)
     {
         if (_hWnd == IntPtr.Zero) return false;
 
@@ -682,7 +661,7 @@ public class AutoClickerSub
                 return false;
                 break;
         }
-        switch (mouseevent)
+        switch (_mouseevent)
         {
             case MOUSEEVENT.CLICK:
                 setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
@@ -739,7 +718,7 @@ public class AutoClickerSub
                 int _dy = 0;
                 int dx = 0;
                 int dy = 0;
-                switch (mouseevent)
+                switch (_mouseevent)
                 {
                     case MOUSEEVENT.SWIPE_UP:
                         _dx = 0;
@@ -797,15 +776,15 @@ public class AutoClickerSub
     public static void ForceActive(IntPtr _hWnd)
     {
         if (NativeMethods.IsIconic(_hWnd))
-            NativeMethods.ShowWindowAsync(_hWnd, nCmdShow.SW_RESTORE);
+            _ = NativeMethods.ShowWindowAsync(_hWnd, nCmdShow.SW_RESTORE);
 
         uint processId = 0;
         uint foregroundID = NativeMethods.GetWindowThreadProcessId(NativeMethods.GetForegroundWindow(), out processId);
         uint targetID = NativeMethods.GetWindowThreadProcessId(_hWnd, out processId);
 
-        NativeMethods.AttachThreadInput(targetID, foregroundID, true);
-        NativeMethods.SetForegroundWindow(_hWnd);
-        NativeMethods.AttachThreadInput(targetID, foregroundID, false);
+        _ = NativeMethods.AttachThreadInput(targetID, foregroundID, true);
+        _ = NativeMethods.SetForegroundWindow(_hWnd);
+        _ = NativeMethods.AttachThreadInput(targetID, foregroundID, false);
     }
 
     /// <summary>
@@ -866,36 +845,22 @@ public class AutoClickerSub
 
     public static Bitmap GetWindowCaptureHdc(IntPtr hWnd)
     {
-        RECT rc = new RECT();
-        if (!NativeMethods.GetClientRect(hWnd, ref rc)) return null;
+        RECT rect = new RECT();
+        if (!NativeMethods.GetClientRect(hWnd, ref rect)) return null;
 
         // if minimum error
-        if (rc.right == 0 && rc.bottom == 0) return null;
+        if (rect.right == 0 && rect.bottom == 0) return null;
 
-        // create a bitmap from the visible clipping bounds of the graphics object from the window
-        Bitmap bmpCapture = new Bitmap(rc.right - rc.left, rc.bottom - rc.top);
+        Bitmap bmpCapture = new Bitmap(rect.right - rect.left, rect.bottom - rect.top);
 
         try
         {
-            // create a graphics object from the bitmap
             Graphics gfxBitmap = Graphics.FromImage(bmpCapture);
-
-            // get a device context for the bitmap
             IntPtr hdcBitmap = gfxBitmap.GetHdc();
-
-            // get a device context for the window
-            //IntPtr hdcWindow = NativeMethods.GetWindowDC(hWnd);
             IntPtr hdcWindow = NativeMethods.GetDC(hWnd);
-
-            // bitblt the window to the bitmap
-            NativeMethods.BitBlt(hdcBitmap, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hdcWindow, 0, 0, TernaryRasterOperations.SRCCOPY);
-
-            // release the bitmap's device context
+            _ = NativeMethods.BitBlt(hdcBitmap, 0, 0, rect.right - rect.left, rect.bottom - rect.top, hdcWindow, 0, 0, TernaryRasterOperations.SRCCOPY);
             gfxBitmap.ReleaseHdc(hdcBitmap);
-
-            NativeMethods.ReleaseDC(hWnd, hdcWindow);
-
-            // dispose of the bitmap's graphics object
+            _ = NativeMethods.ReleaseDC(hWnd, hdcWindow);
             gfxBitmap.Dispose();
         }
         catch
@@ -910,31 +875,30 @@ public class AutoClickerSub
     /// Get Window Capture of _hWnd
     /// </summary>
     /// <param name="_hWnd"></param>
-    /// <param name="rectangle"></param>
     /// <returns></returns>
     public static Bitmap GetWindowCapture(IntPtr _hWnd)
     {
-        Rectangle rectangle = new Rectangle();
+        Rectangle rect;
         RECT clientRect = new RECT();
         Bitmap bmpCapture = null;
         try
         {
-            // target app to topmost for capture
-            NativeMethods.ShowWindow(_hWnd, nCmdShow.SW_RESTORE);
-            NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_TOPMOST, 0, 0, 0, 0, SetWindowPosFlags.DoNotActivate | SetWindowPosFlags.IgnoreResize | SetWindowPosFlags.IgnoreMove | SetWindowPosFlags.DoNotSendChangingEvent | SetWindowPosFlags.ShowWindow);
+            // target application to TOPMOST for capture
+            _ = NativeMethods.ShowWindow(_hWnd, nCmdShow.SW_RESTORE);
+            _ = NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_TOPMOST, 0, 0, 0, 0, SetWindowPosFlags.DoNotActivate | SetWindowPosFlags.IgnoreResize | SetWindowPosFlags.IgnoreMove | SetWindowPosFlags.DoNotSendChangingEvent | SetWindowPosFlags.ShowWindow);
 
             // begin capture
             System.Drawing.Point screenPoint = new System.Drawing.Point(0, 0);
-            NativeMethods.ClientToScreen(_hWnd, ref screenPoint);
-            NativeMethods.GetClientRect(_hWnd, ref clientRect);
-            rectangle = new Rectangle(clientRect.left, clientRect.top, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
-            System.Drawing.Point captureStartPoint = new System.Drawing.Point(screenPoint.X + rectangle.X, screenPoint.Y + rectangle.Y);
-            bmpCapture = new Bitmap(rectangle.Width, rectangle.Height);
+            _ = NativeMethods.ClientToScreen(_hWnd, ref screenPoint);
+            _ = NativeMethods.GetClientRect(_hWnd, ref clientRect);
+            rect = new Rectangle(clientRect.left, clientRect.top, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+            System.Drawing.Point captureStartPoint = new System.Drawing.Point(screenPoint.X + rect.X, screenPoint.Y + rect.Y);
+            bmpCapture = new Bitmap(rect.Width, rect.Height);
             Graphics graphics = Graphics.FromImage(bmpCapture);
-            graphics.CopyFromScreen(captureStartPoint, new System.Drawing.Point(0, 0), rectangle.Size);
+            graphics.CopyFromScreen(captureStartPoint, new System.Drawing.Point(0, 0), rect.Size);
 
-            // target app to nottopmost
-            NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_NOTOPMOST, 0, 0, 0, 0, SetWindowPosFlags.DoNotActivate | SetWindowPosFlags.IgnoreResize | SetWindowPosFlags.IgnoreMove | SetWindowPosFlags.DoNotSendChangingEvent | SetWindowPosFlags.ShowWindow);
+            // target application to NOTOPMOST
+            _ = NativeMethods.SetWindowPos(_hWnd, (IntPtr)hWndInsertAfter.HWND_NOTOPMOST, 0, 0, 0, 0, SetWindowPosFlags.DoNotActivate | SetWindowPosFlags.IgnoreResize | SetWindowPosFlags.IgnoreMove | SetWindowPosFlags.DoNotSendChangingEvent | SetWindowPosFlags.ShowWindow);
         }
         catch
         {
@@ -960,7 +924,6 @@ public class AutoClickerSub
 
 internal class NativeMethods
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static (string, string) GetProceeAndFileName(int pid)
     {
         var processHandle = OpenProcess(0x0400 | 0x0010, false, pid);
@@ -968,8 +931,8 @@ internal class NativeMethods
 
         const int isb = 512;
         var sb = new StringBuilder(isb);
-        string filename = null;
-        string processname = null;
+        string filename;
+        string processname;
 
         if (GetModuleFileNameEx(processHandle, IntPtr.Zero, sb, isb) > 0) filename = sb.ToString();
         else filename = "";
@@ -1098,22 +1061,19 @@ internal class NativeMethods
     internal static extern bool ReleaseCapture();
 
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    internal static extern bool SendNotifyMessage(IntPtr hWnd, WindowMessage Msg, IntPtr wParam, IntPtr lParam);
+    internal static extern bool SendNotifyMessage(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, PreserveSig = false, SetLastError = true)]
-    internal static extern void PostMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wparam, IntPtr lparam);
+    internal static extern void PostMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    internal static extern int SendMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wparam, IntPtr lparam);
+    internal static extern int SendMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    internal static extern int SendMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wparam, StringBuilder lparam);
+    internal static extern int SendMessage(IntPtr windowhWnd, WindowMessage message, IntPtr wParam, StringBuilder lParam);
 
     [DllImport("user32.dll")]
     internal static extern bool SetForegroundWindow(IntPtr hWnd);
-
-    //[DllImport("user32.dll")]
-    //internal static extern void SendInput(int nInputs, ref INPUT pInputs, int cbsize);
 
     [DllImport("user32.dll")]
     internal static extern uint SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] sSENDINPUT[] pInputs, int cbSize);
@@ -1125,10 +1085,10 @@ internal class NativeMethods
     internal static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
     [DllImport("User32.Dll", EntryPoint = "GetWindowRect")]
-    internal static extern bool GetWindowRect(IntPtr hwnd, ref RECT rc);
+    internal static extern bool GetWindowRect(IntPtr hWnd, ref RECT rect);
 
     [DllImport("User32.dll")]
-    internal static extern bool GetClientRect(IntPtr hWnd, ref RECT rc);
+    internal static extern bool GetClientRect(IntPtr hWnd, ref RECT rect);
 
     [DllImport("user32.dll")]
     internal static extern bool ShowWindow(IntPtr hWnd, nCmdShow cmdShow);
@@ -1234,31 +1194,6 @@ public enum SW
     SHOWDEFAULT = 10,
 }
 
-/*
-// Declare the POINT struct
-[StructLayout(LayoutKind.Sequential)]
-public struct POINT
-{
-    public int X;
-    public int Y;
-
-    public static implicit operator Point(POINT point)
-    {
-        return new Point(point.X, point.Y);
-    }
-}
-*/
-/*
-// Declare the RECT struct
-[StructLayout(LayoutKind.Sequential)]
-public struct RECT
-{
-    public int left;
-    public int top;
-    public int right;
-    public int bottom;
-}
-*/
 
 // Declare the INPUT struct
 [StructLayout(LayoutKind.Sequential)]
@@ -1272,7 +1207,6 @@ public struct sSENDINPUT
     }
 }
 
-// Declare the InputUnion struct
 [StructLayout(LayoutKind.Explicit)]
 public struct InputUnion
 {
@@ -1389,7 +1323,7 @@ public enum TernaryRasterOperations : uint
     SRCERASE = 0x00440328,
     /// <summary>dest = (NOT source)</summary>
     NOTSRCCOPY = 0x00330008,
-    /// <summary>dest = (NOT src) AND (NOT dest)</summary>
+    /// <summary>dest = (NOT source) AND (NOT dest)</summary>
     NOTSRCERASE = 0x001100A6,
     /// <summary>dest = (source AND pattern)</summary>
     MERGECOPY = 0x00C000CA,
@@ -1848,7 +1782,7 @@ public enum VirtualKey : ushort
     KANJI = 0x19,       //IME Kanji mode
     ESCAPE = 0x1B,      //ESC key
     CONVERT = 0x1C,     //IME convert
-    NONCONVERT = 0x1D,  //IME nonconvert
+    NONCONVERT = 0x1D,  //IME non convert
     ACCEPT = 0x1E,      //IME accept
     MODECHANGE = 0x1F,  //IME mode change request
 
