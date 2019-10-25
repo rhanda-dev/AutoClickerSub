@@ -270,7 +270,7 @@ public class AutoClickerSub
     /// <param name="_title"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static IntPtr GetWindowHandle(string _title)
+    public static IntPtr GetWindowHandle(string _title)
     {
         if (string.IsNullOrEmpty(_title)) return IntPtr.Zero;
         return NativeMethods.FindWindow(null, _title);
