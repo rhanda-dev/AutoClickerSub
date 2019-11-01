@@ -663,12 +663,12 @@ public class AutoClickerSub
             case MOUSEEVENT.WHEEL:
                 setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_LBUTTONDOWN));
                 setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
-                //NativeMethods.SetForegroundWindow(_hWnd);
-                //System.Threading.Thread.Sleep(1000);
-                NativeMethods.SetCursorPos((int)_x, (int)_y);
-                //System.Threading.Thread.Sleep(1000);
-                //NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
-                NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEWHEEL, new IntPtr(MakeDWord(0, (int)WindowMessage.WHEEL_DELTA * wheel)), pos);
+                System.Drawing.Point cp = new System.Drawing.Point();
+                if (NativeMethods.ClientToScreen(_hWnd, ref cp))
+                {
+                    IntPtr sp = new IntPtr(MakeDWord((ushort)(cp.X + _x), (ushort)(cp.Y + _y)));
+                    NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEWHEEL, new IntPtr(MakeDWord(0, (int)WindowMessage.WHEEL_DELTA * wheel)), sp);
+                }
                 break;
 
             case MOUSEEVENT.MOVE:
