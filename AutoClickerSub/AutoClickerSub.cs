@@ -555,7 +555,7 @@ public class AutoClickerSub
 
         foreach (Process checkProcess in allProcesses)
         {
-            if ((checkProcess.Id != curProcess.Id)&& (string.Compare(checkProcess.MainModule.FileName, curProcess.MainModule.FileName, true) == 0)) return checkProcess;
+            if ((checkProcess.Id != curProcess.Id) && (string.Compare(checkProcess.MainModule.FileName, curProcess.MainModule.FileName, true) == 0)) return checkProcess;
         }
         return null;
     }
@@ -724,15 +724,15 @@ public class AutoClickerSub
                 NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
                 NativeMethods.PostMessage(_hWnd, _down, new IntPtr((int)fwKeys), pos);
 
-                for (int i = 0; i < 20; i++)
+                for (int i = 0; i < 18; i++)
                 {
                     dx += (_dx * i);
                     dy += (_dy * i);
-                    NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, new IntPtr(MakeDWord((ushort)_x + dx, (ushort)_y + dy)));
+                    NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, new IntPtr((int)fwKeys), new IntPtr(MakeDWord((ushort)_x + dx, (ushort)_y + dy)));
                 }
 
-                NativeMethods.PostMessage(_hWnd, _up, IntPtr.Zero, new IntPtr(MakeDWord((ushort)_x + _dx, (ushort)_y)));
-                NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, new IntPtr(MakeDWord((ushort)_x + _dx, (ushort)_y)));
+                NativeMethods.PostMessage(_hWnd, _up, IntPtr.Zero, new IntPtr(MakeDWord((ushort)_x + dx, (ushort)_y + dy)));
+                NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, new IntPtr(MakeDWord((ushort)_x + dx, (ushort)_y + dy)));
                 _ = NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
                 System.Threading.Thread.Sleep(50);
                 break;

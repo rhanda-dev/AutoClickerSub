@@ -79,7 +79,7 @@ WindowInfo
 	}
 </pre>
 - IntPtr hWnd = GetWindowHandle(target_window_title)
-- args arg = SetArgs(ntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, bool _usecolor = default, double _dX = 0.5, double _dY = 0.5, double _threshold = 0.8))
+- args arg = SetArgs(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, bool _usecolor = default, double _dX = 0.5, double _dY = 0.5, double _threshold = 0.8))
     - isRealSize  true is equals to dX =1, dY = 1
     - usehdc true is capture window use Hdc.
     - UseColor true check color image.
