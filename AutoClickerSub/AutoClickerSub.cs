@@ -307,20 +307,27 @@ public class AutoClickerSub
             FullName = fileinfo.FullName.ToString()
         };
 
-        // convert bitmap to OpenCvSharp.Mat. color & gray.
-        templatefile.BitmapImage = new BitmapImage();
-        templatefile.BitmapImage.BeginInit();
-        templatefile.BitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        templatefile.BitmapImage.CreateOptions = BitmapCreateOptions.None;
-        FileStream stream = File.OpenRead(templatefile.FullName);
-        templatefile.BitmapImage.StreamSource = stream;
-        templatefile.BitmapImage.EndInit();
-        templatefile.BitmapImage.Freeze();
-        stream.Close();
-        templatefile.MatImage = new Mat();
-        templatefile.MatGrayImage = new Mat();
-        templatefile.MatImage = templatefile.BitmapImage.ToMat();
-        Cv2.CvtColor(templatefile.MatImage, templatefile.MatGrayImage, ColorConversionCodes.BGR2GRAY);
+        try
+        {
+            // convert bitmap to OpenCvSharp.Mat. color & gray.
+            templatefile.BitmapImage = new BitmapImage();
+            templatefile.BitmapImage.BeginInit();
+            templatefile.BitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            templatefile.BitmapImage.CreateOptions = BitmapCreateOptions.None;
+            FileStream stream = File.OpenRead(templatefile.FullName);
+            templatefile.BitmapImage.StreamSource = stream;
+            templatefile.BitmapImage.EndInit();
+            templatefile.BitmapImage.Freeze();
+            stream.Close();
+            templatefile.MatImage = new Mat();
+            templatefile.MatGrayImage = new Mat();
+            templatefile.MatImage = templatefile.BitmapImage.ToMat();
+            Cv2.CvtColor(templatefile.MatImage, templatefile.MatGrayImage, ColorConversionCodes.BGR2GRAY);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
 
         return templatefile;
     }
@@ -351,9 +358,12 @@ public class AutoClickerSub
             foreach (string templatefilename in ImgFileList) // load template image into memory
             {
                 TemplateFile templateFile = MakeTemplateFile(templatefilename);
-                templateFile.Number = i;
-                templatefiles.Add(templateFile);
-                i++;
+                if (templateFile != null)
+                {
+                    templateFile.Number = i;
+                    templatefiles.Add(templateFile);
+                    i++;
+                }
             }
             return templatefiles;
         }
@@ -381,6 +391,7 @@ public class AutoClickerSub
         if ((_args == default) || (_captureimage == default) || (_templatefilename == default)) return (false, null, null);
 
         TemplateFile templatefile = MakeTemplateFile(_templatefilename);
+        if (templatefile == null) return (false, null, null);
 
         bool ret;
         bool retcode = false;
@@ -640,7 +651,7 @@ public class AutoClickerSub
             case MOUSEEVENT.CLICK:
                 setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
                 setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
-                //NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+                //NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setCursorMouseMovelparam);
                 NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
                 NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
                 NativeMethods.PostMessage(_hWnd, _down, new IntPtr((int)fwKeys), pos);
@@ -719,7 +730,7 @@ public class AutoClickerSub
                 }
                 setcursorbuttondownlparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)_down));
                 setcursormousemovelparam = new IntPtr(MakeDWord((ushort)NCHITTEST.HTCLIENT, (ushort)WindowMessage.WM_MOUSEMOVE));
-                //NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursormousemovelparam);
+                //NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setCursorMouseMovelparam);
                 NativeMethods.PostMessage(_hWnd, WindowMessage.WM_MOUSEMOVE, IntPtr.Zero, pos);
                 NativeMethods.SendNotifyMessage(_hWnd, WindowMessage.WM_SETCURSOR, _hWnd, setcursorbuttondownlparam);
                 NativeMethods.PostMessage(_hWnd, _down, new IntPtr((int)fwKeys), pos);
