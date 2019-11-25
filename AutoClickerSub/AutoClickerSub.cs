@@ -514,8 +514,8 @@ public class AutoClickerSub
         using (result = new Mat(matTarget.Height - matTemplate.Height + 1, matTarget.Width - matTemplate.Width + 1, MatType.CV_8UC1))
         {
             Cv2.MatchTemplate(matTarget, matTemplate, result, TemplateMatchModes.CCoeffNormed);
-            Cv2.Threshold(result, result, threshold, 1.0, ThresholdTypes.Binary);
-            Cv2.MinMaxLoc(result, out minPoint, out maxPoint);
+            //Cv2.Threshold(result, result, threshold, 1.0, ThresholdTypes.Binary);
+            //Cv2.MinMaxLoc(result, out minPoint, out maxPoint);
             Cv2.MinMaxLoc(result, out double minval, out double maxval, out minPoint, out maxPoint);
             if (maxval >= threshold)
             {
