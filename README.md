@@ -79,10 +79,9 @@ WindowInfo
 	}
 </pre>
 - IntPtr hWnd = GetWindowHandle(target_window_title)
-- args arg = SetArgs(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, bool _usecolor = default, double _dX = 0.5, double _dY = 0.5, double _threshold = 0.8))
-    - isRealSize  true is equals to dX =1, dY = 1
+- args arg = SetArgs(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, double _dX = 0.5, double _dY = 0.5, double _threshold = 0.8))
+    - isRealSize  true is equals to dX = 1, dY = 1
     - usehdc true is capture window use Hdc.
-    - UseColor true check color image.
     - magnification dX,dY <=n 1.
     - threshold is between 0.8 to 1.
 - tempatefilelist tmp = GetTemplateFileList(target_directory_name)
@@ -104,17 +103,17 @@ enum fwKeys {
 }
 </pre>
 
-- (bool ret, POINT resized_click_point, POINT REALSIZE_CLICK_POINT) = CheckImage(args, image_file_name)
+- (bool ret, POINT resized_click_point, POINT realsize_click_point) = CheckImage(args, image_file_name)
 <pre>
 ret = true. found.
 resized_click_point. found point.
 REALSIZE_CLICK_POINT. found point.
 </pre>
-- (bool ret, POINT resized_click_point, POINT REALSIZE_CLICK_POINT, matched_image, matched_file_name, matched_index) = TemplateMatch(args, template_file_list)
+- (bool ret, POINT resized_click_point, POINT realsize_click_point, matched_image, matched_file_name, matched_index) = TemplateMatch(args, template_file_list)
 <pre>
 ret = true. found.
 resized_click_point. found point.
-REALSIZE_CLICK_POINT. found point.
+realsize_click_point. found point.
 matched_file_name. First matched file name.
 matched_index. index of templatefilelist.
 </pre>

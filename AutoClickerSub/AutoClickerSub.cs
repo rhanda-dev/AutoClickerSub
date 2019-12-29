@@ -51,7 +51,6 @@ public class AutoClickerSub
         public IntPtr hWnd { get; set; }
         public bool isRealSize { get; set; }
         public bool useHDC { get; set; }
-        public bool useColor { get; set; }
         public double dX { get; set; }
         public double dY { get; set; }
         public double threshold { get; set; }
@@ -61,17 +60,15 @@ public class AutoClickerSub
             this.hWnd = IntPtr.Zero;
             this.isRealSize = false;
             this.useHDC = false;
-            this.useColor = false;
             this.dX = 0.5;
             this.dY = 0.5;
             this.threshold = 0.8;
         }
-        public args(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, bool _usecolor = default, double _dX = 1, double _dY = 1, double _threshold = 0.8)
+        public args(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, double _dX = 1, double _dY = 1, double _threshold = 0.8)
         {
             this.hWnd = _hWnd;
             this.isRealSize = _isrealsize;
             this.useHDC = _usehdc;
-            this.useColor = _usecolor;
             this.dX = _dX;
             this.dY = _dY;
             this.threshold = _threshold;
@@ -245,9 +242,9 @@ public class AutoClickerSub
     /// <param name="_dY">image height resized magnification.</param>
     /// <param name="_threshold">compare threshold. default is 0.8</param>
     /// <returns>return args class</returns>
-    public static args SetArgs(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default, bool _usecolor = default, double _dX = 0.5, double _dY = 0.5, double _threshold = 0.8)
+    public static args SetArgs(IntPtr _hWnd, bool _isrealsize = default, bool _usehdc = default,  double _dX = 0.5, double _dY = 0.5, double _threshold = 0.8)
     {
-        args args = new args(_hWnd, _isrealsize, _usehdc, _usecolor, _dX, _dY, _threshold);
+        args args = new args(_hWnd, _isrealsize, _usehdc, _dX, _dY, _threshold);
         return args;
     }
 
@@ -441,13 +438,11 @@ public class AutoClickerSub
         using (OpenCvSharp.Mat matCaptureImage = new OpenCvSharp.Mat())
         using (OpenCvSharp.Mat TemplateImage = new Mat())
         {
-            if (_args.useColor) captureimage.CopyTo(matCaptureImage);
-            else Cv2.CvtColor(captureimage, matCaptureImage, ColorConversionCodes.BGR2GRAY);
+           Cv2.CvtColor(captureimage, matCaptureImage, ColorConversionCodes.BGR2GRAY);
 
             foreach (TemplateFile templatefile in _templatefiles)
             {
-                if (_args.useColor) templatefile.MatImage.CopyTo(TemplateImage);
-                else templatefile.MatGrayImage.CopyTo(TemplateImage);
+               templatefile.MatGrayImage.CopyTo(TemplateImage);
 
                 (ret, tgtPoint) = MatchTemplate(matCaptureImage, TemplateImage, _args.threshold);
                 if (ret)
